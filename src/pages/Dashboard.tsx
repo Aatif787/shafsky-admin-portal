@@ -7,6 +7,8 @@ import { SummaryCards } from "../components/dashboard/SummaryCards";
 import { AttentionPanel } from "../components/dashboard/AttentionPanel";
 import { UpcomingBookings } from "../components/dashboard/UpcomingBookings";
 import { RecentActivity } from "../components/dashboard/RecentActivity";
+import { CharterSummaryCard } from "../components/dashboard/CharterSummaryCard";
+import { OperationsSummaryCard } from "../components/dashboard/OperationsSummaryCard";
 import { Button } from "../components/ui/Button";
 
 export const Dashboard: React.FC = () => {
@@ -106,13 +108,25 @@ export const Dashboard: React.FC = () => {
         isLoading={isLoading}
       />
 
-      {/* 3. Immediate Attention Queue */}
+      {/* 3. Operations & Charter Summary Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <OperationsSummaryCard
+          metrics={data?.operationsMetrics}
+          isLoading={isLoading}
+        />
+        <CharterSummaryCard
+          metrics={data?.charterMetrics}
+          isLoading={isLoading}
+        />
+      </div>
+
+      {/* 4. Immediate Attention Queue */}
       <AttentionPanel
         items={data?.attentionItems || []}
         isLoading={isLoading}
       />
 
-      {/* 4. Main Grid: Upcoming Bookings & Recent Activity */}
+      {/* 5. Main Grid: Upcoming Bookings & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <UpcomingBookings

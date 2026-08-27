@@ -1,3 +1,6 @@
+import type { CharterDeskMetrics } from "./charter";
+import type { OperationsSummaryMetrics } from "./operations";
+
 export interface DashboardMetrics {
   dailyRevenueINR: number;
   todayBookings: number;
@@ -52,6 +55,8 @@ export interface AuditLogRecord {
 
 export interface DashboardData {
   metrics: DashboardMetrics;
+  charterMetrics?: CharterDeskMetrics;
+  operationsMetrics?: OperationsSummaryMetrics;
   recentBookings: BookingRecord[];
   attentionItems: BookingRecord[];
   auditLogs: AuditLogRecord[];

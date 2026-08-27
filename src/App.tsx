@@ -4,6 +4,12 @@ import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
+import { Bookings } from "./pages/Bookings";
+import { BookingDetail } from "./pages/BookingDetail";
+import { CharterDesk } from "./pages/CharterDesk";
+import { CharterDetail } from "./pages/CharterDetail";
+import { Operations } from "./pages/Operations";
+import { OperationsDetail } from "./pages/OperationsDetail";
 import { ComingSoon } from "./pages/ComingSoon";
 import { AccessDenied } from "./pages/AccessDenied";
 import { NotFound } from "./pages/NotFound";
@@ -25,17 +31,20 @@ export const App: React.FC = () => {
           }
         >
           <Route path="/" element={<Dashboard />} />
-          <Route path="/bookings" element={<ComingSoon moduleName="Airport Bookings Desk" phaseNumber="Phase 18" />} />
-          <Route path="/charter" element={<ComingSoon moduleName="Private Charter Desk" phaseNumber="Phase 18" />} />
-          <Route path="/payments" element={<ComingSoon moduleName="Payment Ledger" phaseNumber="Phase 19" />} />
-          <Route path="/operations" element={<ComingSoon moduleName="Operations Queue" phaseNumber="Phase 20" />} />
+          <Route path="/bookings" element={<Bookings />} />
+          <Route path="/bookings/:bookingRef" element={<BookingDetail />} />
+          <Route path="/charter" element={<CharterDesk />} />
+          <Route path="/charter/:id" element={<CharterDetail />} />
+          <Route path="/operations" element={<Operations />} />
+          <Route path="/operations/:bookingRef" element={<OperationsDetail />} />
+          <Route path="/payments" element={<ComingSoon moduleName="Payment Ledger" phaseNumber="Phase 21" />} />
           
           {/* Super Admin Restricted Route */}
           <Route
             path="/team"
             element={
               <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
-                <ComingSoon moduleName="Team & Roles" phaseNumber="Phase 21" />
+                <ComingSoon moduleName="Team & Roles" phaseNumber="Phase 22" />
               </ProtectedRoute>
             }
           />
