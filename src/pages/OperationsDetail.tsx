@@ -31,7 +31,6 @@ import {
   addOperationsNote,
   triggerOperationsNotifications,
   deriveOperationsPriority,
-  DUTY_OFFICERS_BY_AIRPORT,
 } from "../api/operations";
 import type {
   OperationsQueueItem,
@@ -277,7 +276,6 @@ export const OperationsDetail: React.FC = () => {
   }
 
   const priority = deriveOperationsPriority(item);
-  const airportOfficers = DUTY_OFFICERS_BY_AIRPORT[item.airport_code] || [];
   const servicesList = item.selected_services || [];
 
   return (
@@ -693,36 +691,10 @@ export const OperationsDetail: React.FC = () => {
                 </span>
               </div>
 
-              {/* Station Roster Dropdown */}
-              {airportOfficers.length > 0 && (
-                <div className="space-y-1">
-                  <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
-                    {item.airport_code} Station Roster
-                  </label>
-                  <select
-                    value={selectedStaffId}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      setSelectedStaffId(id);
-                      const found = airportOfficers.find((o) => o.id === id);
-                      if (found) setCustomStaffName(found.name);
-                    }}
-                    className="w-full bg-aviation-850 border border-aviation-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-aviation-gold transition-colors cursor-pointer"
-                  >
-                    <option value="">-- Select from roster --</option>
-                    {airportOfficers.map((off) => (
-                      <option key={off.id} value={off.id}>
-                        {off.name} ({off.shift} Shift)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Custom Officer Name Input */}
+              {/* Manual officer name — no hardcoded roster */}
               <div className="space-y-1">
                 <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
-                  Officer Name (Manual / Custom)
+                  Officer name
                 </label>
                 <input
                   type="text"

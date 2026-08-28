@@ -22,6 +22,9 @@ export type BookingStatusType =
 export interface BookingListQuery {
   status?: BookingStatusType | "ALL";
   search?: string;
+  serviceCategory?: string;
+  dateFrom?: string;
+  dateTo?: string;
   page?: number;
   pageSize?: number;
 }
@@ -30,6 +33,9 @@ export interface BookingListQuery {
 export interface BookingListFilters {
   status: BookingStatusType | "ALL";
   search: string;
+  serviceCategory: string;
+  dateFrom: string;
+  dateTo: string;
 }
 
 /** Authoritative paginated bookings envelope returned by FastAPI backend. */
@@ -68,4 +74,27 @@ export interface MutationResult<T = unknown> {
   error: string | null;
   status?: number;
   isConcurrencyConflict?: boolean;
+}
+
+export interface DeletionLogRecord {
+  id: string;
+  action: string;
+  bookingRef?: string | null;
+  actorId?: string | null;
+  actorEmail?: string | null;
+  actorRole?: string | null;
+  passengerName?: string | null;
+  passengerEmail?: string | null;
+  originalDeletedByUserId?: string | null;
+  originalDeletedByEmail?: string | null;
+  createdAt?: string | null;
+  details?: Record<string, unknown>;
+}
+
+export interface PaginatedDeletionLog {
+  items: DeletionLogRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }

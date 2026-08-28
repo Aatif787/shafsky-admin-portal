@@ -41,6 +41,10 @@ export interface BookingRecord {
   version: number;
   notes?: string | null;
   createdAt: string;
+  deletedAt?: string | null;
+  deletedByUserId?: string | null;
+  deletedByEmail?: string | null;
+  deletedByRole?: string | null;
 }
 
 export interface AuditLogRecord {

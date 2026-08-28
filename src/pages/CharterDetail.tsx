@@ -178,8 +178,8 @@ export const CharterDetail: React.FC = () => {
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-8 flex flex-col items-center gap-4 text-center">
           <AlertTriangle className="h-8 w-8 text-red-400" />
           <div>
-            <p className="text-sm text-red-300 font-medium">Could not load charter enquiry</p>
-            <p className="text-xs text-red-400/70 mt-1 font-mono">{error || "Record not found"}</p>
+            <p className="text-sm text-white">Charter enquiry could not be loaded.</p>
+            <p className="text-xs text-slate-400 mt-1">{error || "Record not found"}</p>
           </div>
           <button
             onClick={() => loadDetail()}

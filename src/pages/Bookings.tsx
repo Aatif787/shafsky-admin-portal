@@ -1,19 +1,30 @@
-/**
- * Bookings List Page — Phase 18.1
- * Authoritative Server-Side Paginated, Filtered & Debounced Operations Desk.
- */
-
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { fetchAdminBookings } from "../api/bookings";
+import { useSearchParams } from "react-router-dom";
+import { fetchAdminBookings, recycleBooking } from "../api/bookings";
 import { BookingsFilters } from "../components/bookings/BookingsFilters";
 import { BookingsTable } from "../components/bookings/BookingsTable";
+import { RecycleBookingModal } from "../components/bookings/BookingActionModals";
 import type { BookingRecord } from "../types/dashboard";
 import type { BookingListFilters } from "../types/booking";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { useAuth } from "../auth/useAuth";
 
 const PAGE_SIZE = 25;
 
+const EMPTY_FILTERS: BookingListFilters = {
+  status: "ALL",
+  search: "",
+  serviceCategory: "ALL",
+  dateFrom: "",
+  dateTo: "",
+};
+
 export const Bookings: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const initialQ = searchParams.get("q") || "";
+  const { role } = useAuth();
+  const canRecycle = role === "ADMIN" || role === "SUPER_ADMIN";
+
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -22,113 +33,117 @@ export const Bookings: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<BookingListFilters>({
-    status: "ALL",
-    search: "",
+    ...EMPTY_FILTERS,
+    search: initialQ,
   });
-
-  // Debounce search term to prevent flooding the backend on every keystroke
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(initialQ);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [recycleTarget, setRecycleTarget] = useState<BookingRecord | null>(null);
+  const [recycleLoading, setRecycleLoading] = useState(false);
+  const [recycleError, setRecycleError] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(filters.search);
-    }, 350);
+    const q = searchParams.get("q") || "";
+    setFilters((prev) => (prev.search === q ? prev : { ...prev, search: q }));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(filters.search), 350);
     return () => clearTimeout(timer);
   }, [filters.search]);
 
-  // When search or status filter changes, reset to page 1
-  const prevFiltersRef = useRef({ status: filters.status, search: debouncedSearch });
+  const prevKeyRef = useRef("");
+  const filterKey = `${filters.status}|${debouncedSearch}|${filters.serviceCategory}|${filters.dateFrom}|${filters.dateTo}`;
+
   useEffect(() => {
-    if (
-      prevFiltersRef.current.status !== filters.status ||
-      prevFiltersRef.current.search !== debouncedSearch
-    ) {
-      prevFiltersRef.current = { status: filters.status, search: debouncedSearch };
+    if (prevKeyRef.current && prevKeyRef.current !== filterKey) {
       setCurrentPage(1);
     }
-  }, [filters.status, debouncedSearch]);
+    prevKeyRef.current = filterKey;
+  }, [filterKey]);
 
-  const loadBookings = useCallback(async (page: number, status: string, search: string) => {
-    // Abort previous in-flight request to avoid race conditions
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    setIsLoading(true);
-    setError(null);
-
-    const res = await fetchAdminBookings(
-      {
-        page,
-        pageSize: PAGE_SIZE,
-        status: status as BookingListFilters["status"],
-        search,
-      },
-      controller.signal
-    );
-
-    // If aborted, do nothing
-    if (controller.signal.aborted) {
-      return;
-    }
-
-    if (res.error) {
-      setError(res.error);
-    } else if (res.data) {
-      setBookings(res.data.items);
-      setTotal(res.data.total);
-      setTotalPages(res.data.totalPages);
-    }
-
-    setIsLoading(false);
-  }, []);
-
-  // Fetch whenever page, status, or debouncedSearch changes
-  useEffect(() => {
-    loadBookings(currentPage, filters.status, debouncedSearch);
-
-    return () => {
+  const loadBookings = useCallback(
+    async (page: number, nextFilters: BookingListFilters, search: string) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-    };
-  }, [currentPage, filters.status, debouncedSearch, loadBookings]);
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-  const handleFiltersChange = (newFilters: BookingListFilters) => {
-    setFilters(newFilters);
-  };
+      setIsLoading(true);
+      setError(null);
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
-      setCurrentPage(newPage);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const res = await fetchAdminBookings(
+        {
+          page,
+          pageSize: PAGE_SIZE,
+          status: nextFilters.status,
+          search,
+          serviceCategory: nextFilters.serviceCategory,
+          dateFrom: nextFilters.dateFrom,
+          dateTo: nextFilters.dateTo,
+        },
+        controller.signal
+      );
+
+      if (controller.signal.aborted) return;
+
+      if (res.error) {
+        setError(
+          res.error.toLowerCase().includes("session")
+            ? "Your session has expired. Please sign in again."
+            : "Unable to connect to operations service."
+        );
+      } else if (res.data) {
+        setBookings(res.data.items);
+        setTotal(res.data.total);
+        setTotalPages(res.data.totalPages);
+      }
+
+      setIsLoading(false);
+    },
+    []
+  );
+
+  useEffect(() => {
+    loadBookings(currentPage, filters, debouncedSearch);
+    return () => abortControllerRef.current?.abort();
+  }, [currentPage, filters.status, filters.serviceCategory, filters.dateFrom, filters.dateTo, debouncedSearch, loadBookings]);
+
+  const handleRecycle = async () => {
+    if (!recycleTarget || recycleLoading) return;
+    setRecycleLoading(true);
+    setRecycleError(null);
+    const res = await recycleBooking(recycleTarget.bookingRef);
+    setRecycleLoading(false);
+    if (res.error) {
+      setRecycleError(res.error);
+      return;
     }
+    setRecycleTarget(null);
+    await loadBookings(currentPage, filters, debouncedSearch);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Search & Status Filters */}
+    <div className="space-y-4 pb-8">
       <BookingsFilters
         filters={filters}
-        onFiltersChange={handleFiltersChange}
+        onFiltersChange={setFilters}
         totalCount={total}
         isLoading={isLoading}
+        onRefresh={() => loadBookings(currentPage, filters, debouncedSearch)}
       />
 
-      {/* Error state */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+        <div className="border border-rose-900/60 bg-rose-950/30 rounded-md p-4 flex items-start gap-3">
+          <AlertTriangle className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm text-red-300 font-medium">Failed to load bookings</p>
-            <p className="text-xs text-red-400/70 mt-1 font-mono">{error}</p>
+            <p className="text-[13px] text-rose-200">{error}</p>
           </div>
           <button
-            onClick={() => loadBookings(currentPage, filters.status, debouncedSearch)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 transition-colors"
+            type="button"
+            onClick={() => loadBookings(currentPage, filters, debouncedSearch)}
+            className="inline-flex items-center gap-1.5 text-[12px] text-rose-200 hover:text-white"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Retry
@@ -136,7 +151,12 @@ export const Bookings: React.FC = () => {
         </div>
       )}
 
-      {/* Server-Paginated Table */}
+      {recycleError && (
+        <div className="border border-rose-900/60 bg-rose-950/30 rounded-md p-3 text-[12px] text-rose-200">
+          {recycleError}
+        </div>
+      )}
+
       {!error && (
         <BookingsTable
           bookings={bookings}
@@ -144,8 +164,27 @@ export const Bookings: React.FC = () => {
           totalPages={totalPages}
           pageSize={PAGE_SIZE}
           totalItems={total}
-          onPageChange={handlePageChange}
+          onPageChange={(page) => {
+            if (page >= 1 && page <= totalPages && page !== currentPage) {
+              setCurrentPage(page);
+            }
+          }}
           isLoading={isLoading}
+          canRecycle={canRecycle}
+          onRecycle={(booking) => {
+            setRecycleError(null);
+            setRecycleTarget(booking);
+          }}
+        />
+      )}
+
+      {recycleTarget && (
+        <RecycleBookingModal
+          isOpen={Boolean(recycleTarget)}
+          onClose={() => setRecycleTarget(null)}
+          onConfirm={handleRecycle}
+          booking={recycleTarget}
+          isLoading={recycleLoading}
         />
       )}
     </div>

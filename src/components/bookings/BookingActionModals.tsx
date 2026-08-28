@@ -302,3 +302,109 @@ export const SyncPaymentModal: React.FC<SyncPaymentModalProps> = ({
     </div>
   </ModalContainer>
 );
+
+/* ─── 5. Move to recycle bin ─── */
+interface RecycleBookingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  booking: BookingRecord;
+  isLoading: boolean;
+}
+
+export const RecycleBookingModal: React.FC<RecycleBookingModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  booking,
+  isLoading,
+}) => (
+  <ModalContainer isOpen={isOpen} onClose={onClose} title="Move booking to bin">
+    <div className="space-y-4">
+      <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5">
+        <AlertTriangle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="text-xs text-amber-200 leading-relaxed">
+          Booking <strong className="text-white font-mono">{booking.bookingRef}</strong> will leave the live
+          list and move to the recycle bin. You can restore it later. Permanent deletion is Super Admin only.
+        </div>
+      </div>
+      <div className="bg-aviation-850/80 p-3.5 rounded-lg border border-aviation-800 text-xs space-y-1.5">
+        <div className="flex justify-between">
+          <span className="text-slate-500">Passenger:</span>
+          <span className="text-white font-medium">{booking.passengerName}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-slate-500">Email:</span>
+          <span className="text-white font-mono">{booking.passengerEmail}</span>
+        </div>
+      </div>
+      <div className="flex items-center justify-end gap-2.5 pt-2">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isLoading}
+          className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-aviation-800 hover:bg-aviation-700 border border-aviation-700 rounded-lg disabled:opacity-50"
+        >
+          Keep on dashboard
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={isLoading}
+          className="px-4 py-2 text-xs font-semibold text-white bg-amber-700 hover:bg-amber-600 rounded-lg flex items-center gap-1.5 disabled:opacity-50"
+        >
+          {isLoading && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+          Move to bin
+        </button>
+      </div>
+    </div>
+  </ModalContainer>
+);
+
+/* ─── 6. Permanent delete ─── */
+interface PurgeBookingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  booking: BookingRecord;
+  isLoading: boolean;
+}
+
+export const PurgeBookingModal: React.FC<PurgeBookingModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  booking,
+  isLoading,
+}) => (
+  <ModalContainer isOpen={isOpen} onClose={onClose} title="Permanently delete booking">
+    <div className="space-y-4">
+      <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-3.5">
+        <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+        <div className="text-xs text-red-300 leading-relaxed">
+          This removes <strong className="text-white font-mono">{booking.bookingRef}</strong> from the
+          database, including related payments and notifications. This cannot be undone.
+        </div>
+      </div>
+      <div className="flex items-center justify-end gap-2.5 pt-2">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isLoading}
+          className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-aviation-800 hover:bg-aviation-700 border border-aviation-700 rounded-lg disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={isLoading}
+          className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-500 rounded-lg flex items-center gap-1.5 disabled:opacity-50"
+        >
+          {isLoading && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+          Delete forever
+        </button>
+      </div>
+    </div>
+  </ModalContainer>
+);

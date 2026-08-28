@@ -61,26 +61,29 @@ export async function fetchDashboardData(): Promise<{ data: DashboardData | null
 
     const auditLogs: AuditLogRecord[] = Array.isArray(auditLogsRes.data) ? auditLogsRes.data : [];
 
-    const confirmedCount =
-      rawDaily.confirmedBookings !== undefined
-        ? Number(rawDaily.confirmedBookings)
-        : Number(rawDashboard.todayBookings ?? 0);
+    const confirmedCount = Number(
+      rawDashboard.confirmedToday ?? rawDaily.confirmedBookings ?? 0
+    );
 
     const metrics: DashboardMetrics = {
       dailyRevenueINR: Number(rawDashboard.dailyRevenueINR ?? rawDaily.dailyRevenueINR ?? 0),
       todayBookings: Number(rawDashboard.todayBookings ?? rawDaily.totalBookings ?? 0),
       completedToday: Number(rawDashboard.completedToday ?? rawDaily.completedBookings ?? 0),
       confirmedToday: confirmedCount,
-      pendingBookings: pendingTotal,
-      pendingPayments: pendingTotal,
+      pendingBookings: Number(rawDashboard.pendingBookings ?? pendingTotal),
+      pendingPayments: Number(rawDashboard.pendingPayments ?? 0),
     };
 
     // Calculate Charter Desk Metrics
-    const charterList: CharterRequestRecord[] = Array.isArray(charterRes.data?.data)
-      ? charterRes.data.data
-      : Array.isArray(charterRes.data)
-      ? charterRes.data
-      : [];
+    const charterList: CharterRequestRecord[] = charterRes.error
+      ? []
+      : Array.isArray(charterRes.data?.items)
+        ? charterRes.data.items
+        : Array.isArray(charterRes.data?.data)
+        ? charterRes.data.data
+        : Array.isArray(charterRes.data)
+          ? charterRes.data
+          : [];
 
     const charterMetrics: CharterDeskMetrics = {
       newEnquiries: charterList.filter((r) => (r.status || "").toUpperCase() === "REQUESTED").length,

@@ -9,6 +9,8 @@ import type {
   BookingListQuery,
   BookingStatusType,
   PaginatedBookings,
+  PaginatedDeletionLog,
+  DeletionLogRecord,
   PaymentReconcileResponse,
   NotificationRetryResponse,
   MutationResult,
@@ -86,6 +88,15 @@ export async function fetchAdminBookings(
     }
     if (query.search && query.search.trim()) {
       params.set("search", query.search.trim());
+    }
+    if (query.serviceCategory && query.serviceCategory !== "ALL") {
+      params.set("service_category", query.serviceCategory);
+    }
+    if (query.dateFrom) {
+      params.set("date_from", query.dateFrom);
+    }
+    if (query.dateTo) {
+      params.set("date_to", query.dateTo);
     }
 
     const queryString = params.toString();
@@ -351,5 +362,191 @@ export async function retryBookingNotifications(
       error: err?.message || "An unexpected error occurred retrying notifications.",
       isConcurrencyConflict: false,
     };
+  }
+}
+
+export async function recycleBooking(
+  identifier: string
+): Promise<MutationResult<BookingRecord>> {
+  try {
+    const res = await apiFetch<BookingRecord>(
+      `/api/bookings/admin/${encodeURIComponent(identifier)}/recycle`,
+      { method: "POST" }
+    );
+    if (res.error) {
+      const parsed = parseApiError(res.status, res.error, "Failed to move booking to the bin.");
+      return {
+        success: false,
+        data: null,
+        error: parsed.message,
+        status: res.status,
+        isConcurrencyConflict: parsed.isConcurrencyConflict,
+      };
+    }
+    return {
+      success: true,
+      data: res.data,
+      error: null,
+      status: res.status,
+      isConcurrencyConflict: false,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      data: null,
+      error: err?.message || "Failed to move booking to the bin.",
+      isConcurrencyConflict: false,
+    };
+  }
+}
+
+export async function restoreBooking(
+  identifier: string
+): Promise<MutationResult<BookingRecord>> {
+  try {
+    const res = await apiFetch<BookingRecord>(
+      `/api/bookings/admin/${encodeURIComponent(identifier)}/restore`,
+      { method: "POST" }
+    );
+    if (res.error) {
+      const parsed = parseApiError(res.status, res.error, "Failed to restore booking.");
+      return {
+        success: false,
+        data: null,
+        error: parsed.message,
+        status: res.status,
+        isConcurrencyConflict: parsed.isConcurrencyConflict,
+      };
+    }
+    return {
+      success: true,
+      data: res.data,
+      error: null,
+      status: res.status,
+      isConcurrencyConflict: false,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      data: null,
+      error: err?.message || "Failed to restore booking.",
+      isConcurrencyConflict: false,
+    };
+  }
+}
+
+export async function purgeBooking(
+  identifier: string
+): Promise<MutationResult<{ bookingRef?: string }>> {
+  try {
+    const res = await apiFetch<{ bookingRef?: string }>(
+      `/api/bookings/admin/${encodeURIComponent(identifier)}/purge`,
+      { method: "DELETE" }
+    );
+    if (res.error) {
+      const parsed = parseApiError(res.status, res.error, "Failed to permanently delete booking.");
+      return {
+        success: false,
+        data: null,
+        error: parsed.message,
+        status: res.status,
+        isConcurrencyConflict: false,
+      };
+    }
+    return {
+      success: true,
+      data: res.data,
+      error: null,
+      status: res.status,
+      isConcurrencyConflict: false,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      data: null,
+      error: err?.message || "Failed to permanently delete booking.",
+      isConcurrencyConflict: false,
+    };
+  }
+}
+
+export async function fetchRecycleBin(
+  query: { page?: number; pageSize?: number; search?: string } = {},
+  signal?: AbortSignal
+): Promise<{ data: PaginatedBookings | null; error: string | null }> {
+  try {
+    const params = new URLSearchParams();
+    const page = query.page && query.page >= 1 ? query.page : 1;
+    const pageSize = query.pageSize && query.pageSize >= 1 ? Math.min(query.pageSize, 100) : 25;
+    params.set("page", String(page));
+    params.set("pageSize", String(pageSize));
+    if (query.search && query.search.trim()) {
+      params.set("search", query.search.trim());
+    }
+    const res = await apiFetch<any>(`/api/bookings/admin/bin?${params.toString()}`, { signal });
+    if (res.error) {
+      return { data: null, error: res.error };
+    }
+    const raw = res.data;
+    if (raw && Array.isArray(raw.items)) {
+      return {
+        data: {
+          items: raw.items as BookingRecord[],
+          total: Number(raw.total ?? raw.items.length),
+          page: Number(raw.page ?? page),
+          pageSize: Number(raw.pageSize ?? pageSize),
+          totalPages: Number(raw.totalPages ?? (Math.ceil((raw.total ?? 0) / pageSize) || 1)),
+        },
+        error: null,
+      };
+    }
+    return {
+      data: { items: [], total: 0, page: 1, pageSize: 25, totalPages: 1 },
+      error: null,
+    };
+  } catch (err: any) {
+    if (err?.name === "AbortError") {
+      return { data: null, error: null };
+    }
+    return { data: null, error: err?.message || "Failed to load recycle bin." };
+  }
+}
+
+export async function fetchDeletionLog(
+  query: { page?: number; pageSize?: number } = {},
+  signal?: AbortSignal
+): Promise<{ data: PaginatedDeletionLog | null; error: string | null }> {
+  try {
+    const params = new URLSearchParams();
+    const page = query.page && query.page >= 1 ? query.page : 1;
+    const pageSize = query.pageSize && query.pageSize >= 1 ? Math.min(query.pageSize, 100) : 25;
+    params.set("page", String(page));
+    params.set("pageSize", String(pageSize));
+    const res = await apiFetch<any>(`/api/bookings/admin/deletion-log?${params.toString()}`, { signal });
+    if (res.error) {
+      return { data: null, error: res.error };
+    }
+    const raw = res.data;
+    if (raw && Array.isArray(raw.items)) {
+      return {
+        data: {
+          items: raw.items as DeletionLogRecord[],
+          total: Number(raw.total ?? raw.items.length),
+          page: Number(raw.page ?? page),
+          pageSize: Number(raw.pageSize ?? pageSize),
+          totalPages: Number(raw.totalPages ?? (Math.ceil((raw.total ?? 0) / pageSize) || 1)),
+        },
+        error: null,
+      };
+    }
+    return {
+      data: { items: [], total: 0, page: 1, pageSize: 25, totalPages: 1 },
+      error: null,
+    };
+  } catch (err: any) {
+    if (err?.name === "AbortError") {
+      return { data: null, error: null };
+    }
+    return { data: null, error: err?.message || "Failed to load deletion log." };
   }
 }

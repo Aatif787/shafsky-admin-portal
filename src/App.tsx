@@ -6,6 +6,7 @@ import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { Bookings } from "./pages/Bookings";
 import { BookingDetail } from "./pages/BookingDetail";
+import { BookingBin } from "./pages/BookingBin";
 import { CharterDesk } from "./pages/CharterDesk";
 import { CharterDetail } from "./pages/CharterDetail";
 import { Operations } from "./pages/Operations";
@@ -32,6 +33,7 @@ export const App: React.FC = () => {
         >
           <Route path="/" element={<Dashboard />} />
           <Route path="/bookings" element={<Bookings />} />
+          <Route path="/bookings/bin" element={<BookingBin />} />
           <Route path="/bookings/:bookingRef" element={<BookingDetail />} />
           <Route path="/charter" element={<CharterDesk />} />
           <Route path="/charter/:id" element={<CharterDetail />} />

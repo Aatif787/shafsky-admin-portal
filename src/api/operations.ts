@@ -16,29 +16,6 @@ import type {
 import { parseApiError } from "./bookings";
 
 /**
- * Standard duty officers by airport matching backend OperationsEngine roster.
- */
-export const DUTY_OFFICERS_BY_AIRPORT: Record<string, Array<{ id: string; name: string; shift: string }>> = {
-  DEL: [
-    { id: "11111111-1111-1111-1111-111111111111", name: "Officer Vikram Singh", shift: "DAY" },
-    { id: "22222222-2222-2222-2222-222222222222", name: "Officer Priya Sharma", shift: "NIGHT" },
-  ],
-  BOM: [
-    { id: "33333333-3333-3333-3333-333333333333", name: "Officer Rajesh Patel", shift: "DAY" },
-    { id: "44444444-4444-4444-4444-444444444444", name: "Officer Ananya Roy", shift: "NIGHT" },
-  ],
-  HYD: [
-    { id: "55555555-5555-5555-5555-555555555555", name: "Officer Suresh Reddy", shift: "ALL" },
-  ],
-  AMD: [
-    { id: "66666666-6666-6666-6666-666666666666", name: "Officer Harsh Shah", shift: "ALL" },
-  ],
-  LKO: [
-    { id: "77777777-7777-7777-7777-777777777777", name: "Officer Amit Verma", shift: "ALL" },
-  ],
-};
-
-/**
  * Derives operational priority for airport ground operations based on documented conditions:
  * - URGENT: Status is NEW with flight today/within 6 hours, OR IN_PROGRESS.
  * - ATTENTION: Unassigned duty officer, OR status in ASSIGNED/READY with service date today.

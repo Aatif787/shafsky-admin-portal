@@ -35,16 +35,12 @@ interface SectionCardProps {
 }
 
 const SectionCard: React.FC<SectionCardProps> = ({ title, icon, children }) => (
-  <div className="bg-aviation-900 border border-aviation-800 rounded-xl overflow-hidden">
-    <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-aviation-800 bg-aviation-850/40">
-      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-aviation-800">
-        {icon}
-      </div>
-      <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-300">
-        {title}
-      </h3>
+  <div className="bg-aviation-900 border border-aviation-800 rounded-md overflow-hidden">
+    <div className="flex items-center gap-2 px-4 py-2.5 border-b border-aviation-800">
+      {icon}
+      <h3 className="text-[12px] font-semibold text-slate-200">{title}</h3>
     </div>
-    <div className="p-5">{children}</div>
+    <div className="p-4">{children}</div>
   </div>
 );
 

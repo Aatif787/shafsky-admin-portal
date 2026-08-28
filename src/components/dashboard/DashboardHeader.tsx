@@ -1,6 +1,5 @@
 import React from "react";
 import { RefreshCw } from "lucide-react";
-import { Button } from "../ui/Button";
 import { formatOperationalDateTime } from "../../lib/dateUtils";
 
 interface DashboardHeaderProps {
@@ -14,48 +13,33 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   isRefreshing,
   onRefresh,
 }) => {
-  const currentIST = formatOperationalDateTime(new Date().toISOString());
+  const today = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date());
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-aviation-850">
+    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 border-b border-aviation-800">
       <div>
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 text-[10px] font-mono uppercase tracking-wider">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Live Ops Feed
-          </span>
-          <span className="text-xs font-mono text-slate-500">•</span>
-          <span className="text-xs font-mono text-slate-400">{currentIST}</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight mt-1">
-          Operations Dashboard
-        </h1>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Real-time booking dispatch, operational metrics, and ground handling attention queue.
-        </p>
-      </div>
-
-      <div className="flex items-center gap-3">
+        <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Operations overview</p>
+        <h2 className="mt-1 text-lg font-semibold text-white">Today · {today}</h2>
         {lastUpdated && (
-          <div className="hidden sm:block text-right">
-            <div className="text-[10px] font-mono text-slate-500 uppercase">Last Synced</div>
-            <div className="text-xs font-mono text-slate-300">
-              {formatOperationalDateTime(lastUpdated).split(",")[1]?.trim() || "Just now"}
-            </div>
-          </div>
+          <p className="mt-0.5 text-[12px] text-slate-500">
+            Last synced {formatOperationalDateTime(lastUpdated)}
+          </p>
         )}
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onRefresh}
-          isLoading={isRefreshing}
-          leftIcon={<RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />}
-          className="text-xs font-medium"
-        >
-          {isRefreshing ? "Syncing..." : "Refresh Feed"}
-        </Button>
       </div>
+      <button
+        type="button"
+        onClick={onRefresh}
+        disabled={isRefreshing}
+        className="inline-flex items-center gap-1.5 self-start rounded-md border border-aviation-800 px-3 py-1.5 text-[12px] text-slate-300 hover:bg-aviation-900 disabled:opacity-50"
+      >
+        <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+        Refresh
+      </button>
     </div>
   );
 };

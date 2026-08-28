@@ -75,13 +75,26 @@ export async function fetchAdminCharterRequests(
     const res = await apiFetch<any>(path, { signal });
 
     if (res.error) {
-      return { data: null, error: res.error };
+      const unavailable =
+        res.status === 404
+          ? "Charter Desk is temporarily unavailable."
+          : res.status === 401
+            ? "Your session has expired. Please sign in again."
+            : res.error;
+      return { data: null, error: unavailable };
     }
 
     const raw = res.data;
+    const sourceItems: CharterRequestRecord[] = Array.isArray(raw?.items)
+      ? raw.items
+      : Array.isArray(raw?.data)
+        ? raw.data
+        : Array.isArray(raw)
+          ? raw
+          : [];
 
-    if (raw && Array.isArray(raw.data)) {
-      let items: CharterRequestRecord[] = raw.data;
+    if (sourceItems.length > 0 || Array.isArray(raw?.items) || Array.isArray(raw?.data) || Array.isArray(raw)) {
+      let items: CharterRequestRecord[] = sourceItems;
 
       // Filter by derived priority client-side if priority filter is specified
       if (query.priority && query.priority !== "ALL") {
@@ -91,9 +104,9 @@ export async function fetchAdminCharterRequests(
       return {
         data: {
           items,
-          total: Number(raw.total ?? raw.data.length),
-          skip: Number(raw.skip ?? skip),
-          limit: Number(raw.limit ?? limit),
+          total: Number(raw?.total ?? items.length),
+          skip: Number(raw?.skip ?? skip),
+          limit: Number(raw?.limit ?? limit),
         },
         error: null,
       };
@@ -129,7 +142,13 @@ export async function fetchAdminCharterDetail(
     const res = await apiFetch<any>(`/api/v1/admin/charter/requests/${encodeURIComponent(id)}`);
 
     if (res.error) {
-      return { data: null, error: res.error };
+      const message =
+        res.status === 404
+          ? "Charter Desk is temporarily unavailable."
+          : res.status === 401
+            ? "Your session has expired. Please sign in again."
+            : res.error;
+      return { data: null, error: message };
     }
 
     const data = res.data?.data || res.data;

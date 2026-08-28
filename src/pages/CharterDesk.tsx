@@ -1,10 +1,5 @@
-/**
- * CharterDesk Page — Phase 19B
- * Private Charter Inquiries Operational Console (/charter).
- */
-
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Plane, RefreshCw, AlertTriangle } from "lucide-react";
+import { RefreshCw, AlertTriangle } from "lucide-react";
 import { fetchAdminCharterRequests } from "../api/charter";
 import type { CharterRequestRecord, CharterPriority } from "../types/charter";
 import { CharterFilters } from "../components/charter/CharterFilters";
@@ -12,66 +7,50 @@ import { CharterTable } from "../components/charter/CharterTable";
 
 export const CharterDesk: React.FC = () => {
   const [items, setItems] = useState<CharterRequestRecord[]>([]);
-  const [total, setTotal] = useState<number>(0);
-  const [skip, setSkip] = useState<number>(0);
-  const [limit] = useState<number>(25);
-
-  const [search, setSearch] = useState<string>("");
-  const [status, setStatus] = useState<string>("ALL");
+  const [total, setTotal] = useState(0);
+  const [skip, setSkip] = useState(0);
+  const [limit] = useState(25);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("ALL");
   const [priority, setPriority] = useState<CharterPriority | "ALL">("ALL");
-
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
-  const isMountedRef = useRef<boolean>(true);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      abortControllerRef.current?.abort();
     };
   }, []);
 
   const loadData = useCallback(
     async (isManualRefresh = false) => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      abortControllerRef.current?.abort();
       const controller = new AbortController();
       abortControllerRef.current = controller;
-
-      if (isManualRefresh) {
-        setIsRefreshing(true);
-      } else {
-        setIsLoading(true);
-      }
+      if (isManualRefresh) setIsRefreshing(true);
+      else setIsLoading(true);
       setError(null);
 
       const res = await fetchAdminCharterRequests(
-        {
-          skip,
-          limit,
-          search,
-          status,
-          priority,
-        },
+        { skip, limit, search, status, priority },
         controller.signal
       );
-
       if (!isMountedRef.current) return;
 
       if (res.error) {
         setError(res.error);
+        setItems([]);
+        setTotal(0);
       } else if (res.data) {
         setItems(res.data.items);
         setTotal(res.data.total);
       }
-
       setIsLoading(false);
       setIsRefreshing(false);
     },
@@ -82,88 +61,75 @@ export const CharterDesk: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  // Handle filter changes (resets pagination to skip = 0)
-  const handleSearchChange = (val: string) => {
-    setSearch(val);
-    setSkip(0);
-  };
-
-  const handleStatusChange = (val: string) => {
-    setStatus(val);
-    setSkip(0);
-  };
-
-  const handlePriorityChange = (val: CharterPriority | "ALL") => {
-    setPriority(val);
-    setSkip(0);
-  };
+  const unavailable = Boolean(error);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-10">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-aviation-gold/10 border border-aviation-gold/30 text-aviation-gold">
-            <Plane className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-display font-bold text-white tracking-tight">
-              Private Charter Desk
-            </h1>
-            <p className="text-xs text-slate-400 font-mono mt-0.5">
-              Live Aviation Enquiries & Triage Desk
-            </p>
-          </div>
+    <div className="space-y-4 pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b border-aviation-800 pb-3">
+        <div>
+          <h1 className="text-lg font-semibold text-white">Charter Desk</h1>
+          <p className="text-[12px] text-slate-500 mt-0.5">
+            {unavailable ? "Service status unknown" : `${total.toLocaleString()} enquiries`}
+          </p>
         </div>
-
-        {/* Refresh Action */}
         <button
           type="button"
           onClick={() => loadData(true)}
           disabled={isLoading || isRefreshing}
-          className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-aviation-850 hover:bg-aviation-800 border border-aviation-800 transition-colors disabled:opacity-50 select-none cursor-pointer"
+          className="inline-flex items-center gap-1.5 self-start rounded-md border border-aviation-800 px-3 py-1.5 text-[12px] text-slate-300 hover:bg-aviation-900 disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
-          <span>{isRefreshing ? "Refreshing..." : "Refresh Desk"}</span>
+          Refresh
         </button>
       </div>
 
-      {/* Error Banner */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-red-300">
-            <AlertTriangle className="h-4 w-4 text-red-400 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
+        <div className="border border-aviation-800 bg-aviation-900 rounded-md p-8 text-center space-y-2">
+          <AlertTriangle className="h-5 w-5 text-amber-400 mx-auto" />
+          <p className="text-[13px] text-white">{error}</p>
+          <p className="text-[12px] text-slate-500">
+            No charter enquiries are shown while this service is unavailable.
+          </p>
           <button
+            type="button"
             onClick={() => loadData()}
-            className="text-xs font-medium text-red-300 hover:text-white underline font-mono"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-aviation-800 px-3 py-1.5 text-[12px] text-slate-200"
           >
             Retry
           </button>
         </div>
       )}
 
-      {/* Filters */}
-      <CharterFilters
-        search={search}
-        onSearchChange={handleSearchChange}
-        status={status}
-        onStatusChange={handleStatusChange}
-        priority={priority}
-        onPriorityChange={handlePriorityChange}
-        totalCount={total}
-      />
-
-      {/* Inquiries Table */}
-      <CharterTable
-        items={items}
-        isLoading={isLoading}
-        total={total}
-        skip={skip}
-        limit={limit}
-        onPageChange={(newSkip) => setSkip(newSkip)}
-      />
+      {!error && (
+        <>
+          <CharterFilters
+            search={search}
+            onSearchChange={(val) => {
+              setSearch(val);
+              setSkip(0);
+            }}
+            status={status}
+            onStatusChange={(val) => {
+              setStatus(val);
+              setSkip(0);
+            }}
+            priority={priority}
+            onPriorityChange={(val) => {
+              setPriority(val);
+              setSkip(0);
+            }}
+            totalCount={total}
+          />
+          <CharterTable
+            items={items}
+            isLoading={isLoading}
+            total={total}
+            skip={skip}
+            limit={limit}
+            onPageChange={(newSkip) => setSkip(newSkip)}
+          />
+        </>
+      )}
     </div>
   );
 };
