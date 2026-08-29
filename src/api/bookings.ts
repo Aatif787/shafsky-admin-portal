@@ -495,7 +495,9 @@ export async function fetchRecycleBin(
           total: Number(raw.total ?? raw.items.length),
           page: Number(raw.page ?? page),
           pageSize: Number(raw.pageSize ?? pageSize),
-          totalPages: Number(raw.totalPages ?? (Math.ceil((raw.total ?? 0) / pageSize) || 1)),
+          totalPages: Number(
+            raw.totalPages ?? Math.max(1, Math.ceil(Number(raw.total ?? raw.items.length) / pageSize))
+          ),
         },
         error: null,
       };
@@ -534,7 +536,9 @@ export async function fetchDeletionLog(
           total: Number(raw.total ?? raw.items.length),
           page: Number(raw.page ?? page),
           pageSize: Number(raw.pageSize ?? pageSize),
-          totalPages: Number(raw.totalPages ?? (Math.ceil((raw.total ?? 0) / pageSize) || 1)),
+          totalPages: Number(
+            raw.totalPages ?? Math.max(1, Math.ceil(Number(raw.total ?? raw.items.length) / pageSize))
+          ),
         },
         error: null,
       };
