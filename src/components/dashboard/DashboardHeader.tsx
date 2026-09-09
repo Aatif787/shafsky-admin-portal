@@ -1,5 +1,5 @@
 import React from "react";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Activity, ShieldCheck } from "lucide-react";
 import { formatOperationalDateTime } from "../../lib/dateUtils";
 
 interface DashboardHeaderProps {
@@ -21,25 +21,62 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   }).format(new Date());
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 border-b border-aviation-800">
-      <div>
-        <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Operations overview</p>
-        <h2 className="mt-1 text-lg font-semibold text-white">Today · {today}</h2>
-        {lastUpdated && (
-          <p className="mt-0.5 text-[12px] text-slate-500">
-            Last synced {formatOperationalDateTime(lastUpdated)}
-          </p>
-        )}
+    <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+      {/* Top enterprise accent bar with lime green & orange gradient */}
+      <div className="h-1.5 w-full bg-gradient-to-r from-lime-500 via-emerald-500 to-orange-500" />
+
+      <div className="p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+        <div className="space-y-2">
+          {/* Highlighted section badges */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-lime-50 text-lime-800 border border-lime-200 shadow-2xs">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-lime-600" />
+              </span>
+              <span>Operations Overview</span>
+            </div>
+
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-200">
+              <Activity className="h-3 w-3 text-orange-600" />
+              <span>Live Updates</span>
+            </div>
+
+            <div className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-slate-500 bg-slate-50 border border-slate-200">
+              <ShieldCheck className="h-3 w-3 text-lime-600" />
+              <span>Online</span>
+            </div>
+          </div>
+
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-slate-900">
+              Operations Overview
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">
+              Today · {today} (IST) · Summary of bookings, charter requests, and airport handling.
+            </p>
+          </div>
+
+          {lastUpdated && (
+            <p className="text-[11px] text-slate-400 font-mono">
+              Last updated {formatOperationalDateTime(lastUpdated)}
+            </p>
+          )}
+        </div>
+
+        {/* Refresh Action Control */}
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 disabled:opacity-50 transition-all select-none cursor-pointer"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 text-lime-600 ${isRefreshing ? "animate-spin" : ""}`} />
+            <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+          </button>
+        </div>
       </div>
-      <button
-        type="button"
-        onClick={onRefresh}
-        disabled={isRefreshing}
-        className="inline-flex items-center gap-1.5 self-start rounded-md border border-aviation-800 px-3 py-1.5 text-[12px] text-slate-300 hover:bg-aviation-900 disabled:opacity-50"
-      >
-        <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
-        Refresh
-      </button>
     </div>
   );
 };

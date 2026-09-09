@@ -215,12 +215,17 @@ export const BookingDetail: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <button type="button" onClick={() => navigate("/bookings")} className="text-[12px] text-slate-400 hover:text-white">
-          ← Bookings
+        <button
+          type="button"
+          onClick={() => navigate("/bookings")}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-lime-700 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Bookings</span>
         </button>
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
-          <div className="lg:col-span-7 h-64 bg-aviation-900 border border-aviation-800 rounded-md animate-pulse" />
-          <div className="lg:col-span-3 h-64 bg-aviation-900 border border-aviation-800 rounded-md animate-pulse" />
+          <div className="lg:col-span-7 h-64 bg-white border border-slate-200 rounded-xl shadow-xs animate-pulse" />
+          <div className="lg:col-span-3 h-64 bg-white border border-slate-200 rounded-xl shadow-xs animate-pulse" />
         </div>
       </div>
     );
@@ -229,17 +234,22 @@ export const BookingDetail: React.FC = () => {
   if (error || !booking) {
     return (
       <div className="space-y-4">
-        <button type="button" onClick={() => navigate("/bookings")} className="text-[12px] text-slate-400 hover:text-white">
-          ← Bookings
+        <button
+          type="button"
+          onClick={() => navigate("/bookings")}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-lime-700 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Bookings</span>
         </button>
-        <div className="border border-rose-900/60 bg-rose-950/20 rounded-md p-6 text-center space-y-3">
-          <AlertTriangle className="h-5 w-5 text-rose-400 mx-auto" />
-          <p className="text-[13px] text-white">Unable to load this booking.</p>
-          <p className="text-[12px] text-slate-400">{error || "Record not found"}</p>
+        <div className="border border-rose-200 bg-white rounded-2xl p-8 text-center space-y-4 shadow-sm max-w-md mx-auto">
+          <AlertTriangle className="h-8 w-8 text-rose-500 mx-auto" />
+          <h2 className="text-base font-bold text-slate-900">Unable to load this booking.</h2>
+          <p className="text-xs text-slate-500">{error || "Record not found"}</p>
           <button
             type="button"
             onClick={() => loadDetail()}
-            className="inline-flex items-center gap-1.5 text-[12px] text-slate-200 border border-aviation-800 px-3 py-1.5 rounded-md"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 rounded-lg shadow-xs transition-all"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Retry
@@ -252,23 +262,23 @@ export const BookingDetail: React.FC = () => {
   const pay = (booking.metadataJson?.payment_status || "—").toString();
 
   return (
-    <div className="space-y-4 pb-8">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-aviation-800 pb-3">
+    <div className="space-y-5 pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-4">
         <div>
           <button
             type="button"
             onClick={() => navigate("/bookings")}
-            className="inline-flex items-center gap-1 text-[12px] text-slate-500 hover:text-white mb-2"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-lime-700 transition-colors mb-2"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
+            <ArrowLeft className="h-4 w-4" />
             Bookings
           </button>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-lg font-semibold font-mono text-white">{booking.bookingRef}</h1>
-            <BookingStatusBadge status={booking.status} />
-            <span className="text-[11px] text-slate-400">{pay}</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-bold font-mono text-slate-900">{booking.bookingRef}</h1>
+            <BookingStatusBadge status={booking.status} size="md" />
+            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">{pay}</span>
           </div>
-          <p className="text-[12px] text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1.5 font-medium">
             {booking.passengerName}
             {booking.flightNum ? ` · ${booking.flightNum}` : ""}
             {booking.departureTime ? ` · ${formatOperationalDateTime(booking.departureTime)}` : ""}
@@ -277,46 +287,46 @@ export const BookingDetail: React.FC = () => {
         <button
           type="button"
           onClick={() => loadDetail(true)}
-          className="inline-flex items-center gap-1.5 self-start rounded-md border border-aviation-800 px-3 py-1.5 text-[12px] text-slate-300 hover:bg-aviation-900"
+          className="inline-flex items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 transition-all"
         >
-          <RefreshCw className="h-3.5 w-3.5" />
+          <RefreshCw className="h-3.5 w-3.5 text-slate-500" />
           Refresh
         </button>
       </div>
 
       {actionSuccess && (
-        <div className="border border-emerald-900/50 bg-emerald-950/20 rounded-md px-3 py-2 flex items-start justify-between gap-3">
+        <div className="border border-lime-200 bg-lime-50 rounded-xl px-4 py-3 flex items-start justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            <p className="text-[12px] text-emerald-200">{actionSuccess}</p>
+            <CheckCircle2 className="h-4 w-4 text-lime-600" />
+            <p className="text-xs font-semibold text-lime-900">{actionSuccess}</p>
           </div>
-          <button type="button" onClick={() => setActionSuccess(null)} className="text-slate-500">
+          <button type="button" onClick={() => setActionSuccess(null)} className="text-lime-600 hover:text-lime-800">
             <X className="h-4 w-4" />
           </button>
         </div>
       )}
 
       {actionError && (
-        <div className="border border-rose-900/50 bg-rose-950/20 rounded-md px-3 py-2 flex items-start justify-between gap-3">
+        <div className="border border-rose-200 bg-rose-50 rounded-xl px-4 py-3 flex items-start justify-between gap-3 shadow-xs">
           <div className="flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-rose-400 mt-0.5" />
+            <AlertCircle className="h-4 w-4 text-rose-600 mt-0.5" />
             <div>
-              <p className="text-[12px] text-rose-200">{actionError}</p>
+              <p className="text-xs font-semibold text-rose-900">{actionError}</p>
               {isConflict && (
-                <button type="button" onClick={() => loadDetail()} className="mt-1 text-[11px] text-slate-300 underline">
+                <button type="button" onClick={() => loadDetail()} className="mt-1 text-xs text-rose-700 underline font-semibold">
                   Reload latest record
                 </button>
               )}
             </div>
           </div>
-          <button type="button" onClick={() => setActionError(null)} className="text-slate-500">
+          <button type="button" onClick={() => setActionError(null)} className="text-rose-600 hover:text-rose-800">
             <X className="h-4 w-4" />
           </button>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
-        <div className="lg:col-span-7 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-5">
+        <div className="lg:col-span-7 space-y-5">
           <CustomerSection booking={booking} />
           <FlightSection booking={booking} />
           <ServiceSection booking={booking} />
@@ -329,7 +339,7 @@ export const BookingDetail: React.FC = () => {
           <MetadataSection booking={booking} />
         </div>
 
-        <div className="lg:col-span-3 space-y-4">
+        <div className="lg:col-span-3 space-y-5">
           <PaymentOperationsSection
             booking={booking}
             onOpenSync={() => {

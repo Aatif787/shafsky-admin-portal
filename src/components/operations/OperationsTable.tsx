@@ -14,35 +14,35 @@ export const OperationsTable: React.FC<OperationsTableProps> = ({ items, isLoadi
   const navigate = useNavigate();
 
   return (
-    <div className="border border-aviation-800 rounded-md overflow-hidden bg-aviation-900">
+    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[960px] text-left text-[12px]">
-          <thead className="sticky top-0 bg-aviation-900 border-b border-aviation-800 text-[10px] uppercase tracking-wider text-slate-500">
+        <table className="w-full min-w-[960px] text-left text-xs">
+          <thead className="sticky top-0 bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             <tr>
-              <th className="px-3 py-2 font-medium">Priority</th>
-              <th className="px-3 py-2 font-medium">Booking</th>
-              <th className="px-3 py-2 font-medium">Passenger</th>
-              <th className="px-3 py-2 font-medium">Flight</th>
-              <th className="px-3 py-2 font-medium">Airport</th>
-              <th className="px-3 py-2 font-medium">Terminal</th>
-              <th className="px-3 py-2 font-medium">Travel time</th>
-              <th className="px-3 py-2 font-medium">Services</th>
-              <th className="px-3 py-2 font-medium">Assigned officer</th>
-              <th className="px-3 py-2 font-medium">Status</th>
+              <th className="px-4 py-3 font-semibold">Priority</th>
+              <th className="px-4 py-3 font-semibold">Booking</th>
+              <th className="px-4 py-3 font-semibold">Passenger</th>
+              <th className="px-4 py-3 font-semibold">Flight</th>
+              <th className="px-4 py-3 font-semibold">Airport</th>
+              <th className="px-4 py-3 font-semibold">Terminal</th>
+              <th className="px-4 py-3 font-semibold">Travel time</th>
+              <th className="px-4 py-3 font-semibold">Services</th>
+              <th className="px-4 py-3 font-semibold">Assigned officer</th>
+              <th className="px-4 py-3 font-semibold">Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100">
             {isLoading ? (
               [1, 2, 3, 4, 5].map((i) => (
-                <tr key={i} className="border-b border-aviation-800">
-                  <td colSpan={10} className="px-3 py-2">
-                    <div className="h-6 bg-aviation-850 animate-pulse rounded" />
+                <tr key={i}>
+                  <td colSpan={10} className="px-4 py-3">
+                    <div className="h-6 bg-slate-100 animate-pulse rounded-md" />
                   </td>
                 </tr>
               ))
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-4 py-10 text-center text-slate-500">
+                <td colSpan={10} className="px-4 py-12 text-center text-xs text-slate-500 font-medium">
                   No operations in the queue.
                 </td>
               </tr>
@@ -57,32 +57,42 @@ export const OperationsTable: React.FC<OperationsTableProps> = ({ items, isLoadi
                   <tr
                     key={item.id}
                     onClick={() => navigate(`/operations/${encodeURIComponent(item.booking_reference)}`)}
-                    className="border-b border-aviation-800/70 hover:bg-aviation-850 cursor-pointer"
+                    className="hover:bg-lime-50/20 cursor-pointer transition-colors group"
                   >
-                    <td
-                      className={`px-3 py-2 ${
-                        priority === "URGENT"
-                          ? "text-rose-400"
-                          : priority === "ATTENTION"
-                            ? "text-amber-400"
-                            : "text-slate-500"
-                      }`}
-                    >
-                      {priority}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold tracking-wider ${
+                          priority === "URGENT"
+                            ? "bg-rose-50 text-rose-700 border border-rose-200"
+                            : priority === "ATTENTION"
+                              ? "bg-orange-50 text-orange-700 border border-orange-200"
+                              : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {priority}
+                      </span>
                     </td>
-                    <td className="px-3 py-2 font-mono text-slate-200">{item.booking_reference}</td>
-                    <td className="px-3 py-2 text-white">{item.customer_name}</td>
-                    <td className="px-3 py-2 font-mono">{item.flight_number || "—"}</td>
-                    <td className="px-3 py-2 font-mono">{item.airport_code}</td>
-                    <td className="px-3 py-2 text-slate-400">{item.journey_type || "—"}</td>
-                    <td className="px-3 py-2 text-slate-400">
+                    <td className="px-4 py-3 font-mono text-xs font-semibold text-slate-800 group-hover:text-lime-700 transition-colors">
+                      {item.booking_reference}
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-slate-900">{item.customer_name}</td>
+                    <td className="px-4 py-3 font-mono text-slate-700 font-medium">{item.flight_number || "—"}</td>
+                    <td className="px-4 py-3 font-mono font-semibold text-slate-900">{item.airport_code}</td>
+                    <td className="px-4 py-3 text-slate-600">{item.journey_type || "—"}</td>
+                    <td className="px-4 py-3 text-slate-600">
                       {formatOperationalDate(item.service_date)} {item.service_time}
                     </td>
-                    <td className="px-3 py-2 max-w-[180px] truncate" title={servicesStr}>
+                    <td className="px-4 py-3 max-w-[180px] truncate text-slate-700 font-medium" title={servicesStr}>
                       {servicesStr}
                     </td>
-                    <td className="px-3 py-2">{item.assigned_staff_name || "Unassigned"}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-3 text-slate-700 font-medium">
+                      {item.assigned_staff_name ? (
+                        <span className="text-slate-900 font-semibold">{item.assigned_staff_name}</span>
+                      ) : (
+                        <span className="text-orange-600 font-medium text-xs">Unassigned</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
                       <OperationsStatusBadge status={item.status} />
                     </td>
                   </tr>

@@ -15,21 +15,21 @@ export const Alert: React.FC<AlertProps> = ({
   className = "",
 }) => {
   const icons = {
-    error: <AlertCircle className="h-4 w-4 text-rose-400 shrink-0" />,
-    warning: <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />,
-    success: <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />,
-    info: <Info className="h-4 w-4 text-cyan-400 shrink-0" />,
+    error: <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />,
+    warning: <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0" />,
+    success: <CheckCircle2 className="h-4 w-4 text-lime-600 shrink-0" />,
+    info: <Info className="h-4 w-4 text-sky-600 shrink-0" />,
   };
 
   const styles = {
-    error: "bg-rose-950/40 border-rose-800/60 text-rose-200",
-    warning: "bg-amber-950/40 border-amber-800/60 text-amber-200",
-    success: "bg-emerald-950/40 border-emerald-800/60 text-emerald-200",
-    info: "bg-cyan-950/40 border-cyan-800/60 text-cyan-200",
+    error: "bg-rose-50 border-rose-200 text-rose-800",
+    warning: "bg-orange-50 border-orange-200 text-orange-800",
+    success: "bg-lime-50 border-lime-200 text-lime-800",
+    info: "bg-sky-50 border-sky-200 text-sky-800",
   };
 
   return (
-    <div className={`flex gap-3 rounded-lg border p-3.5 text-xs ${styles[variant]} ${className}`}>
+    <div className={`flex gap-3 rounded-lg border p-3.5 text-xs shadow-xs ${styles[variant]} ${className}`}>
       {icons[variant]}
       <div className="space-y-0.5 leading-relaxed">
         {title && <div className="font-semibold">{title}</div>}

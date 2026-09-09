@@ -24,8 +24,12 @@ const STATUS_OPTIONS: { value: BookingStatusType | "ALL"; label: string }[] = [
 const CATEGORY_OPTIONS = [
   { value: "ALL", label: "All services" },
   { value: "Airport Assistance", label: "Airport Assistance" },
+  { value: "Ground Transport", label: "Ground Transport" },
+  { value: "Travel Support", label: "Travel Support / Hotels" },
+  { value: "Medical Assistance", label: "Medical Assistance" },
+  { value: "Cargo & Logistics", label: "Cargo & Logistics" },
+  { value: "Private Charter", label: "Private Charter (bookings)" },
   { value: "Meet & Greet", label: "Meet & Greet" },
-  { value: "Charter", label: "Charter" },
 ];
 
 const EMPTY_FILTERS: BookingListFilters = {
@@ -37,7 +41,7 @@ const EMPTY_FILTERS: BookingListFilters = {
 };
 
 const selectClass =
-  "appearance-none rounded-md border border-aviation-800 bg-aviation-900 px-3 py-2 text-[12px] text-white focus:border-aviation-gold/50 focus:outline-none";
+  "appearance-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-xs focus:border-lime-500 focus:ring-2 focus:ring-lime-500/20 focus:outline-none transition-all cursor-pointer hover:border-slate-300";
 
 export const BookingsFilters: React.FC<BookingsFiltersProps> = ({
   filters,
@@ -57,8 +61,8 @@ export const BookingsFilters: React.FC<BookingsFiltersProps> = ({
     <div className="space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-white">Bookings</h1>
-          <p className="text-[12px] text-slate-500 mt-0.5">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">Bookings</h1>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">
             {isLoading
               ? "Loading records…"
               : `${totalCount.toLocaleString()} total record${totalCount === 1 ? "" : "s"}`}
@@ -68,22 +72,22 @@ export const BookingsFilters: React.FC<BookingsFiltersProps> = ({
           type="button"
           onClick={onRefresh}
           disabled={isLoading}
-          className="inline-flex items-center gap-1.5 self-start rounded-md border border-aviation-800 px-3 py-1.5 text-[12px] text-slate-300 hover:bg-aviation-900 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 disabled:opacity-50 transition-all"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
-          Refresh
+          <RefreshCw className={`h-3.5 w-3.5 text-slate-500 ${isLoading ? "animate-spin" : ""}`} />
+          <span>Refresh</span>
         </button>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-2">
+      <div className="flex flex-col lg:flex-row gap-2.5">
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Booking ref, passenger, email, phone, flight, airport"
+            placeholder="Search booking ref, passenger, email, phone, flight, airport…"
             value={filters.search}
             onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
-            className="w-full rounded-md border border-aviation-800 bg-aviation-900 py-2 pl-9 pr-3 text-[12px] text-white placeholder-slate-500 focus:border-aviation-gold/50 focus:outline-none"
+            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs text-slate-900 placeholder-slate-400 shadow-xs focus:border-lime-500 focus:ring-2 focus:ring-lime-500/20 focus:outline-none transition-all"
           />
         </div>
 
@@ -135,7 +139,7 @@ export const BookingsFilters: React.FC<BookingsFiltersProps> = ({
           <button
             type="button"
             onClick={() => onFiltersChange(EMPTY_FILTERS)}
-            className="inline-flex items-center gap-1.5 rounded-md border border-aviation-800 px-3 py-2 text-[12px] text-slate-400 hover:text-white"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-medium text-orange-700 hover:bg-orange-100 transition-all"
           >
             <X className="h-3.5 w-3.5" />
             Clear

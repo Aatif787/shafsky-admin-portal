@@ -64,11 +64,11 @@ export const CharterDesk: React.FC = () => {
   const unavailable = Boolean(error);
 
   return (
-    <div className="space-y-4 pb-8">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b border-aviation-800 pb-3">
+    <div className="space-y-5 pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b border-slate-200 pb-4">
         <div>
-          <h1 className="text-lg font-semibold text-white">Charter Desk</h1>
-          <p className="text-[12px] text-slate-500 mt-0.5">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">Charter Desk</h1>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">
             {unavailable ? "Service status unknown" : `${total.toLocaleString()} enquiries`}
           </p>
         </div>
@@ -76,26 +76,26 @@ export const CharterDesk: React.FC = () => {
           type="button"
           onClick={() => loadData(true)}
           disabled={isLoading || isRefreshing}
-          className="inline-flex items-center gap-1.5 self-start rounded-md border border-aviation-800 px-3 py-1.5 text-[12px] text-slate-300 hover:bg-aviation-900 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 transition-all disabled:opacity-50"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-3.5 w-3.5 text-slate-500 ${isRefreshing ? "animate-spin" : ""}`} />
           Refresh
         </button>
       </div>
 
       {error && (
-        <div className="border border-aviation-800 bg-aviation-900 rounded-md p-8 text-center space-y-2">
-          <AlertTriangle className="h-5 w-5 text-amber-400 mx-auto" />
-          <p className="text-[13px] text-white">{error}</p>
-          <p className="text-[12px] text-slate-500">
+        <div className="border border-slate-200 bg-white rounded-2xl p-8 text-center space-y-3 shadow-xs max-w-md mx-auto">
+          <AlertTriangle className="h-8 w-8 text-orange-500 mx-auto" />
+          <p className="text-sm font-bold text-slate-900">{error}</p>
+          <p className="text-xs text-slate-500 font-medium">
             No charter enquiries are shown while this service is unavailable.
           </p>
           <button
             type="button"
             onClick={() => loadData()}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-aviation-800 px-3 py-1.5 text-[12px] text-slate-200"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-xs"
           >
-            Retry
+            Retry Connection
           </button>
         </div>
       )}

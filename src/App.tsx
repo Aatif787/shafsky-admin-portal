@@ -11,6 +11,7 @@ import { CharterDesk } from "./pages/CharterDesk";
 import { CharterDetail } from "./pages/CharterDetail";
 import { Operations } from "./pages/Operations";
 import { OperationsDetail } from "./pages/OperationsDetail";
+import { AirportServices } from "./pages/AirportServices";
 import { ComingSoon } from "./pages/ComingSoon";
 import { AccessDenied } from "./pages/AccessDenied";
 import { NotFound } from "./pages/NotFound";
@@ -39,6 +40,7 @@ export const App: React.FC = () => {
           <Route path="/charter/:id" element={<CharterDetail />} />
           <Route path="/operations" element={<Operations />} />
           <Route path="/operations/:bookingRef" element={<OperationsDetail />} />
+          <Route path="/pricing" element={<AirportServices />} />
           <Route path="/payments" element={<ComingSoon moduleName="Payment Ledger" phaseNumber="Phase 21" />} />
           
           {/* Super Admin Restricted Route */}

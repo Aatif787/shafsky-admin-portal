@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, ShieldCheck, Plane } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
@@ -26,71 +26,106 @@ export const Login: React.FC = () => {
     e.preventDefault();
     setLocalError(null);
     if (!email.trim() || !password) {
-      setLocalError("Please enter both email and password.");
+      setLocalError("Please enter your email and password.");
       return;
     }
     setIsSubmitting(true);
     const result = await login(email, password);
     setIsSubmitting(false);
     if (result.success) navigate(from, { replace: true });
-    else setLocalError(result.error || "Invalid email or password.");
+    else setLocalError(result.error || "Incorrect email or password. Please try again.");
   };
 
   const displayError = localError || authError;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-aviation-950 px-4 py-12">
-      <div className="w-full max-w-sm space-y-6">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">Shafsky</p>
-          <h1 className="mt-1 text-lg font-semibold text-white">Aviation Operations</h1>
-          <p className="mt-1 text-[12px] text-slate-500">Authorized operators only.</p>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
+      <div className="w-full max-w-md">
+        {/* Card */}
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden">
+          {/* Lime and orange top accent line */}
+          <div className="h-1.5 w-full bg-gradient-to-r from-lime-500 via-emerald-500 to-orange-500" />
+
+          <div className="p-8 space-y-6">
+            <div className="flex flex-col items-center text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-lime-50 border border-lime-200 text-lime-700 shadow-2xs mb-3">
+                <Plane className="h-6 w-6 transform -rotate-45" />
+              </div>
+              <span className="text-xs font-semibold uppercase tracking-wider text-orange-600">
+                Shafsky Aviation
+              </span>
+              <h1 className="mt-1 text-2xl font-bold text-slate-900 tracking-tight">
+                Admin Portal
+              </h1>
+              <p className="mt-1.5 text-sm text-slate-500">
+                Sign in to manage bookings, flights, and daily operations.
+              </p>
+            </div>
+
+            {displayError && (
+              <Alert variant="error" title="Sign in failed">
+                {displayError}
+              </Alert>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                label="Email address"
+                type="email"
+                placeholder="name@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
+                leftIcon={<Mail className="h-4 w-4 text-slate-400" />}
+                autoComplete="email"
+                autoFocus
+                required
+              />
+              <Input
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isSubmitting}
+                leftIcon={<Lock className="h-4 w-4 text-slate-400" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                    tabIndex={-1}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                }
+                autoComplete="current-password"
+                required
+              />
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  className="w-full justify-center bg-lime-600 hover:bg-lime-500 text-white font-semibold shadow-xs py-2.5 text-sm"
+                  isLoading={isSubmitting}
+                >
+                  Sign In
+                </Button>
+              </div>
+            </form>
+
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-center gap-1.5 text-xs text-slate-400">
+              <ShieldCheck className="h-3.5 w-3.5 text-lime-600" />
+              <span>Secure admin sign-in</span>
+            </div>
+          </div>
         </div>
 
-        <div className="border border-aviation-800 bg-aviation-900 rounded-md p-6 space-y-4">
-          {displayError && (
-            <Alert variant="error" title="Sign in failed">
-              {displayError}
-            </Alert>
-          )}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              label="Operator email"
-              type="email"
-              placeholder="operator@shafskyaviation.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isSubmitting}
-              leftIcon={<Mail className="h-4 w-4" />}
-              autoComplete="email"
-              autoFocus
-              required
-            />
-            <Input
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isSubmitting}
-              leftIcon={<Lock className="h-4 w-4" />}
-              rightIcon={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="hover:text-slate-200"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              }
-              autoComplete="current-password"
-              required
-            />
-            <Button type="submit" variant="primary" size="md" className="w-full" isLoading={isSubmitting}>
-              Sign in
-            </Button>
-          </form>
-        </div>
+        <p className="text-center text-xs text-slate-400 mt-4">
+          Shafsky Aviation · All rights reserved
+        </p>
       </div>
     </div>
   );

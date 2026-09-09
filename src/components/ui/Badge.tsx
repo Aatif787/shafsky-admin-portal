@@ -16,7 +16,7 @@ export const Badge: React.FC<BadgeProps> = ({
   icon,
 }) => {
   const baseStyles =
-    "inline-flex items-center font-mono font-medium rounded uppercase tracking-wider select-none";
+    "inline-flex items-center font-mono font-medium rounded-md uppercase tracking-wider select-none";
 
   const sizeStyles = {
     sm: "text-[10px] px-2 py-0.5 gap-1",
@@ -24,12 +24,12 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const variantStyles = {
-    gold: "bg-aviation-gold/15 text-aviation-gold-light border border-aviation-gold/30",
-    blue: "bg-cyan-500/15 text-cyan-300 border border-cyan-500/30",
-    emerald: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
-    amber: "bg-amber-500/15 text-amber-300 border border-amber-500/30",
-    rose: "bg-rose-500/15 text-rose-300 border border-rose-500/30",
-    slate: "bg-slate-800 text-slate-300 border border-slate-700",
+    gold: "bg-lime-50 text-lime-700 border border-lime-200",
+    blue: "bg-sky-50 text-sky-700 border border-sky-200",
+    emerald: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    amber: "bg-orange-50 text-orange-700 border border-orange-200",
+    rose: "bg-rose-50 text-rose-700 border border-rose-200",
+    slate: "bg-slate-100 text-slate-600 border border-slate-200",
   };
 
   return (

@@ -29,50 +29,50 @@ export const OperationsStatusBadge: React.FC<StatusBadgeProps> = ({ status, size
     switch (norm) {
       case "NEW":
         return {
-          bg: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-          icon: <Sparkles className="h-3 w-3 text-amber-400" />,
+          bg: "bg-orange-50 text-orange-800 border-orange-200",
+          icon: <Sparkles className="h-3 w-3 text-orange-600" />,
           label: "NEW",
         };
       case "ASSIGNED":
         return {
-          bg: "bg-sky-500/10 text-sky-300 border-sky-500/30",
-          icon: <UserCheck className="h-3 w-3 text-sky-400" />,
+          bg: "bg-sky-50 text-sky-800 border-sky-200",
+          icon: <UserCheck className="h-3 w-3 text-sky-600" />,
           label: "ASSIGNED",
         };
       case "IN_PROGRESS":
         return {
-          bg: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30",
-          icon: <Play className="h-3 w-3 text-indigo-400" />,
+          bg: "bg-lime-50 text-lime-800 border-lime-200",
+          icon: <Play className="h-3 w-3 text-lime-600" />,
           label: "IN PROGRESS",
         };
       case "CUSTOMER_CONTACTED":
         return {
-          bg: "bg-teal-500/10 text-teal-300 border-teal-500/30",
-          icon: <PhoneCall className="h-3 w-3 text-teal-400" />,
+          bg: "bg-teal-50 text-teal-800 border-teal-200",
+          icon: <PhoneCall className="h-3 w-3 text-teal-600" />,
           label: "CONTACTED",
         };
       case "READY":
         return {
-          bg: "bg-blue-500/10 text-blue-300 border-blue-500/30",
-          icon: <CheckCircle2 className="h-3 w-3 text-blue-400" />,
+          bg: "bg-blue-50 text-blue-800 border-blue-200",
+          icon: <CheckCircle2 className="h-3 w-3 text-blue-600" />,
           label: "READY",
         };
       case "COMPLETED":
         return {
-          bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-          icon: <Check className="h-3 w-3 text-emerald-400" />,
+          bg: "bg-slate-100 text-slate-700 border-slate-200",
+          icon: <Check className="h-3 w-3 text-slate-600" />,
           label: "COMPLETED",
         };
       case "CANCELLED":
         return {
-          bg: "bg-red-500/10 text-red-400 border-red-500/30",
-          icon: <XCircle className="h-3 w-3 text-red-400" />,
+          bg: "bg-rose-50 text-rose-700 border-rose-200",
+          icon: <XCircle className="h-3 w-3 text-rose-600" />,
           label: "CANCELLED",
         };
       default:
         return {
-          bg: "bg-slate-800 text-slate-300 border-slate-700",
-          icon: <Check className="h-3 w-3" />,
+          bg: "bg-slate-100 text-slate-700 border-slate-200",
+          icon: <Check className="h-3 w-3 text-slate-600" />,
           label: norm,
         };
     }
@@ -83,7 +83,7 @@ export const OperationsStatusBadge: React.FC<StatusBadgeProps> = ({ status, size
 
   return (
     <span
-      className={`inline-flex items-center rounded-full font-mono font-medium border ${style.bg} ${sizeClasses}`}
+      className={`inline-flex items-center rounded-full font-mono font-medium border select-none ${style.bg} ${sizeClasses}`}
     >
       {style.icon}
       <span>{style.label}</span>
@@ -101,20 +101,20 @@ export const OperationsPriorityBadge: React.FC<PriorityBadgeProps> = ({ priority
     switch (priority) {
       case "URGENT":
         return {
-          bg: "bg-red-500/10 text-red-400 border-red-500/30",
-          icon: <Flame className="h-3 w-3 text-red-400 animate-pulse" />,
+          bg: "bg-rose-50 text-rose-700 border-rose-200",
+          icon: <Flame className="h-3 w-3 text-rose-600" />,
           label: "URGENT",
         };
       case "ATTENTION":
         return {
-          bg: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-          icon: <AlertTriangle className="h-3 w-3 text-amber-400" />,
+          bg: "bg-orange-50 text-orange-800 border-orange-200",
+          icon: <AlertTriangle className="h-3 w-3 text-orange-600" />,
           label: "ATTENTION",
         };
       case "NORMAL":
       default:
         return {
-          bg: "bg-slate-800 text-slate-400 border-slate-700",
+          bg: "bg-slate-100 text-slate-600 border-slate-200",
           icon: null,
           label: "NORMAL",
         };
@@ -126,7 +126,7 @@ export const OperationsPriorityBadge: React.FC<PriorityBadgeProps> = ({ priority
 
   return (
     <span
-      className={`inline-flex items-center rounded font-mono font-semibold border ${style.bg} ${sizeClasses}`}
+      className={`inline-flex items-center rounded font-mono font-semibold border select-none ${style.bg} ${sizeClasses}`}
     >
       {style.icon}
       <span>{style.label}</span>

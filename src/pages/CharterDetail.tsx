@@ -160,8 +160,8 @@ export const CharterDetail: React.FC = () => {
         <BackButton onClick={() => navigate("/charter")} />
         <div className="flex items-center justify-center py-24">
           <div className="flex flex-col items-center gap-3">
-            <div className="h-8 w-8 border-2 border-aviation-gold/30 border-t-aviation-gold rounded-full animate-spin" />
-            <span className="text-sm text-slate-400 font-mono">
+            <div className="h-8 w-8 border-2 border-lime-600/30 border-t-lime-600 rounded-full animate-spin" />
+            <span className="text-sm text-slate-500 font-mono">
               Loading charter inquiry details...
             </span>
           </div>
@@ -175,15 +175,15 @@ export const CharterDetail: React.FC = () => {
     return (
       <div className="space-y-6 max-w-7xl mx-auto pb-10">
         <BackButton onClick={() => navigate("/charter")} />
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-8 flex flex-col items-center gap-4 text-center">
-          <AlertTriangle className="h-8 w-8 text-red-400" />
+        <div className="bg-rose-50 border border-rose-200 rounded-xl p-8 flex flex-col items-center gap-4 text-center">
+          <AlertTriangle className="h-8 w-8 text-rose-500" />
           <div>
-            <p className="text-sm text-white">Charter enquiry could not be loaded.</p>
-            <p className="text-xs text-slate-400 mt-1">{error || "Record not found"}</p>
+            <p className="text-sm font-semibold text-rose-900">Charter enquiry could not be loaded.</p>
+            <p className="text-xs text-rose-700 mt-1">{error || "Record not found"}</p>
           </div>
           <button
             onClick={() => loadDetail()}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium text-white bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium text-rose-800 bg-rose-100 hover:bg-rose-200 border border-rose-300 transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Retry
@@ -204,13 +204,13 @@ export const CharterDetail: React.FC = () => {
           <BackButton onClick={() => navigate("/charter")} />
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-xl font-display font-bold text-white tracking-tight">
+              <h1 className="text-xl font-display font-bold text-slate-900 tracking-tight">
                 {charter.request_reference}
               </h1>
               <CharterStatusBadge status={charter.status} size="md" />
               <CharterPriorityBadge priority={priority} size="md" />
             </div>
-            <p className="text-xs text-slate-400 font-mono mt-0.5">
+            <p className="text-xs text-slate-500 font-mono mt-0.5">
               {charter.customer_name}
               {charter.company ? ` · ${charter.company}` : ""}
               {" · "}
@@ -224,7 +224,7 @@ export const CharterDetail: React.FC = () => {
           type="button"
           onClick={() => loadDetail(true)}
           disabled={isSavingStatus || isSavingNotes}
-          className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 bg-aviation-850 hover:bg-aviation-800 hover:text-white border border-aviation-800 transition-colors cursor-pointer"
+          className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-slate-900 border border-slate-200 shadow-xs transition-colors cursor-pointer"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Refresh
@@ -233,14 +233,14 @@ export const CharterDetail: React.FC = () => {
 
       {/* Operational Feedback Alert Banners */}
       {feedbackSuccess && (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between gap-3 animate-in fade-in">
+        <div className="bg-lime-50 border border-lime-200 rounded-xl p-4 flex items-center justify-between gap-3 animate-in fade-in">
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-            <span className="text-xs text-emerald-300 font-medium">{feedbackSuccess}</span>
+            <CheckCircle2 className="h-4 w-4 text-lime-600 flex-shrink-0" />
+            <span className="text-xs text-lime-800 font-medium">{feedbackSuccess}</span>
           </div>
           <button
             onClick={() => setFeedbackSuccess(null)}
-            className="text-emerald-400 hover:text-emerald-200 text-xs font-mono"
+            className="text-lime-700 hover:text-lime-900 text-xs font-mono font-medium"
           >
             Dismiss
           </button>
@@ -248,14 +248,14 @@ export const CharterDetail: React.FC = () => {
       )}
 
       {feedbackError && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center justify-between gap-3 animate-in fade-in">
+        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-center justify-between gap-3 animate-in fade-in">
           <div className="flex items-center gap-2.5">
-            <AlertTriangle className="h-4 w-4 text-red-400 flex-shrink-0" />
-            <span className="text-xs text-red-300 font-medium">{feedbackError}</span>
+            <AlertTriangle className="h-4 w-4 text-rose-500 flex-shrink-0" />
+            <span className="text-xs text-rose-800 font-medium">{feedbackError}</span>
           </div>
           <button
             onClick={() => setFeedbackError(null)}
-            className="text-red-400 hover:text-red-200 text-xs font-mono"
+            className="text-rose-700 hover:text-rose-900 text-xs font-mono font-medium"
           >
             Dismiss
           </button>
@@ -269,12 +269,12 @@ export const CharterDetail: React.FC = () => {
             ═══════════════════════════════════════════ */}
         <div className="lg:col-span-7 space-y-6">
           {/* 1. Customer Summary Card */}
-          <div className="bg-aviation-900 border border-aviation-800 rounded-xl overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-aviation-800 bg-aviation-850/40">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-aviation-800">
-                <User className="h-4 w-4 text-sky-400" />
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-slate-200 bg-slate-50">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-50 border border-sky-100">
+                <User className="h-4 w-4 text-sky-600" />
               </div>
-              <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-300">
+              <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-800">
                 Customer & Contact Details
               </h3>
             </div>
@@ -285,7 +285,7 @@ export const CharterDetail: React.FC = () => {
                 label="Company / Organization"
                 value={
                   charter.company ? (
-                    <span className="inline-flex items-center gap-1 text-white">
+                    <span className="inline-flex items-center gap-1 text-slate-900 font-medium">
                       <Building2 className="h-3 w-3 text-slate-400" />
                       {charter.company}
                     </span>
@@ -297,7 +297,7 @@ export const CharterDetail: React.FC = () => {
                 value={
                   <a
                     href={`tel:${charter.country_code}${charter.phone}`}
-                    className="inline-flex items-center gap-1 text-aviation-gold hover:underline font-mono"
+                    className="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 hover:underline font-mono font-medium"
                   >
                     <Phone className="h-3 w-3" />
                     {charter.country_code} {charter.phone}
@@ -309,7 +309,7 @@ export const CharterDetail: React.FC = () => {
                 value={
                   <a
                     href={`mailto:${charter.email}`}
-                    className="inline-flex items-center gap-1 text-aviation-gold hover:underline font-mono"
+                    className="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 hover:underline font-mono font-medium"
                   >
                     <Mail className="h-3 w-3" />
                     {charter.email}
@@ -328,40 +328,40 @@ export const CharterDetail: React.FC = () => {
           </div>
 
           {/* 2. Flight & Journey Requirement */}
-          <div className="bg-aviation-900 border border-aviation-800 rounded-xl overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-aviation-800 bg-aviation-850/40">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-aviation-800">
-                <Plane className="h-4 w-4 text-violet-400" />
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-slate-200 bg-slate-50">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50 border border-violet-100">
+                <Plane className="h-4 w-4 text-violet-600" />
               </div>
-              <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-300">
+              <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-800">
                 Flight & Route Requirement
               </h3>
             </div>
 
             <div className="p-5 space-y-4">
               {/* Route banner */}
-              <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-aviation-850/60 border border-aviation-800">
+              <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
                     Route ({charter.trip_type.replace(/_/g, " ")})
                   </span>
-                  <div className="flex items-center gap-2 text-lg font-mono font-bold text-white mt-0.5">
+                  <div className="flex items-center gap-2 text-lg font-mono font-bold text-slate-900 mt-0.5">
                     <span>{charter.origin}</span>
-                    <span className="text-aviation-gold">→</span>
+                    <span className="text-orange-500">→</span>
                     <span>{charter.destination}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
                       Departure Date
                     </span>
-                    <span className="text-sm font-mono font-semibold text-amber-300">
+                    <span className="text-sm font-mono font-semibold text-orange-600">
                       {formatOperationalDate(charter.departure_date)}
                     </span>
                     {charter.departure_time && (
-                      <span className="text-[11px] font-mono text-slate-400 block">
+                      <span className="text-[11px] font-mono text-slate-500 block">
                         {charter.departure_time}
                       </span>
                     )}
@@ -374,7 +374,7 @@ export const CharterDetail: React.FC = () => {
                 <Field
                   label="Aircraft Preference"
                   value={
-                    <span className="capitalize font-medium text-violet-300">
+                    <span className="capitalize font-medium text-violet-700 bg-violet-50 px-2 py-0.5 rounded border border-violet-100">
                       {charter.aircraft_preference.replace(/_/g, " ").toLowerCase()}
                     </span>
                   }
@@ -382,7 +382,7 @@ export const CharterDetail: React.FC = () => {
                 <Field
                   label="Total Passengers"
                   value={
-                    <span className="font-mono font-bold text-sky-300">
+                    <span className="font-mono font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-100">
                       {paxTotal} Passengers
                     </span>
                   }
@@ -390,10 +390,10 @@ export const CharterDetail: React.FC = () => {
                 <Field
                   label="Pax Breakdown"
                   value={
-                    <span className="font-mono text-slate-300">
-                      {charter.passengers?.adults || 1}A
-                      {charter.passengers?.children ? ` · ${charter.passengers.children}C` : ""}
-                      {charter.passengers?.infants ? ` · ${charter.passengers.infants}I` : ""}
+                    <span className="font-mono text-slate-700">
+                      {charter.passengers?.adults || 1} Adults
+                      {charter.passengers?.children ? ` · ${charter.passengers.children} Children` : ""}
+                      {charter.passengers?.infants ? ` · ${charter.passengers.infants} Infants` : ""}
                     </span>
                   }
                 />
@@ -401,7 +401,7 @@ export const CharterDetail: React.FC = () => {
                   <Field
                     label="Return Schedule"
                     value={
-                      <span className="font-mono text-white">
+                      <span className="font-mono text-slate-900">
                         {formatOperationalDate(charter.return_date)}
                         {charter.return_time ? ` (${charter.return_time})` : ""}
                       </span>
@@ -412,23 +412,23 @@ export const CharterDetail: React.FC = () => {
 
               {/* Detailed Itinerary Legs if multiple */}
               {charter.itinerary && charter.itinerary.length > 1 && (
-                <div className="border-t border-aviation-800 pt-3 space-y-2">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block">
+                <div className="border-t border-slate-200 pt-3 space-y-2">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
                     Full Flight Itinerary ({charter.itinerary.length} Legs)
                   </span>
                   <div className="space-y-2">
                     {charter.itinerary.map((leg, idx) => (
                       <div
                         key={idx}
-                        className="bg-aviation-850 p-2.5 rounded-lg border border-aviation-800 flex items-center justify-between text-xs font-mono"
+                        className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center justify-between text-xs font-mono"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-slate-500 text-[10px]">Leg {idx + 1}:</span>
-                          <span className="text-white font-semibold">
+                          <span className="text-slate-400 text-[10px]">Leg {idx + 1}:</span>
+                          <span className="text-slate-900 font-semibold">
                             {leg.origin} → {leg.destination}
                           </span>
                         </div>
-                        <div className="text-slate-400">
+                        <div className="text-slate-500">
                           {formatOperationalDate(leg.departure_date)}
                           {leg.departure_time ? ` (${leg.departure_time})` : ""}
                         </div>
@@ -441,12 +441,12 @@ export const CharterDetail: React.FC = () => {
           </div>
 
           {/* 3. Travel Requirements & Special Requests (Quote Card) */}
-          <div className="bg-aviation-900 border border-aviation-800 rounded-xl overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-aviation-800 bg-aviation-850/40">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-aviation-800">
-                <Sparkles className="h-4 w-4 text-aviation-gold" />
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-slate-200 bg-slate-50">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 border border-orange-100">
+                <Sparkles className="h-4 w-4 text-orange-500" />
               </div>
-              <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-300">
+              <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-800">
                 Customer Travel Requirements & Special Requests
               </h3>
             </div>
@@ -455,16 +455,16 @@ export const CharterDetail: React.FC = () => {
               {/* Requirements Chips */}
               {charter.travel_requirements && charter.travel_requirements.length > 0 && (
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block mb-2">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block mb-2">
                     Selected Travel Services
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {charter.travel_requirements.map((req, i) => (
                       <span
                         key={i}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-aviation-800 border border-aviation-700 rounded-md text-xs text-slate-200"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-50 border border-orange-200 rounded-md text-xs text-orange-800 font-medium"
                       >
-                        <Tag className="h-3 w-3 text-aviation-gold" />
+                        <Tag className="h-3 w-3 text-orange-600" />
                         <span>{req}</span>
                       </span>
                     ))}
@@ -474,15 +474,15 @@ export const CharterDetail: React.FC = () => {
 
               {/* Special Requests Quote Box */}
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block mb-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block mb-2">
                   Customer Notes & Itinerary Remarks
                 </span>
                 {charter.special_requests ? (
-                  <div className="relative bg-aviation-850/80 border-l-2 border-aviation-gold rounded-r-xl p-4 text-xs text-slate-200 leading-relaxed font-sans italic whitespace-pre-wrap">
+                  <div className="relative bg-orange-50/40 border-l-4 border-orange-500 rounded-r-xl p-4 text-xs text-slate-800 leading-relaxed font-sans italic whitespace-pre-wrap">
                     "{charter.special_requests}"
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 italic">No custom notes specified by customer.</p>
+                  <p className="text-xs text-slate-400 italic">No custom notes specified by customer.</p>
                 )}
               </div>
             </div>
@@ -494,19 +494,19 @@ export const CharterDetail: React.FC = () => {
             ═══════════════════════════════════════════ */}
         <div className="lg:col-span-5 space-y-6">
           {/* 1. Status Workflow Progression Panel */}
-          <div className="bg-aviation-900 border border-aviation-800 rounded-xl overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-aviation-800 bg-aviation-850/40">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-aviation-800">
-                <ShieldCheck className="h-4 w-4 text-emerald-400" />
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-slate-200 bg-slate-50">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-lime-50 border border-lime-100">
+                <ShieldCheck className="h-4 w-4 text-lime-600" />
               </div>
-              <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-300">
+              <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-800">
                 Lifecycle & Status Progression
               </h3>
             </div>
 
             <div className="p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
                   Current Status
                 </span>
                 <CharterStatusBadge status={charter.status} size="md" />
@@ -514,7 +514,7 @@ export const CharterDetail: React.FC = () => {
 
               {/* Status Select Control */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block">
                   Update Workflow Status
                 </label>
                 <div className="flex items-center gap-2">
@@ -522,7 +522,7 @@ export const CharterDetail: React.FC = () => {
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value as CharterRequestStatus)}
                     disabled={isSavingStatus}
-                    className="flex-1 bg-aviation-850 border border-aviation-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-aviation-gold transition-colors cursor-pointer disabled:opacity-50"
+                    className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {ALL_STATUSES.map((st) => (
                       <option key={st.value} value={st.value}>
@@ -535,7 +535,7 @@ export const CharterDetail: React.FC = () => {
                     type="button"
                     onClick={() => handleUpdateStatus(selectedStatus)}
                     disabled={isSavingStatus || selectedStatus === charter.status}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-aviation-950 bg-aviation-gold hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all select-none cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-lime-600 hover:bg-lime-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all select-none cursor-pointer shadow-xs"
                   >
                     {isSavingStatus ? (
                       <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -548,8 +548,8 @@ export const CharterDetail: React.FC = () => {
               </div>
 
               {/* Quick Actions Bar */}
-              <div className="pt-2 border-t border-aviation-800 space-y-2">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block">
+              <div className="pt-2 border-t border-slate-200 space-y-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
                   Quick Actions
                 </span>
                 <div className="grid grid-cols-2 gap-2">
@@ -557,7 +557,7 @@ export const CharterDetail: React.FC = () => {
                     type="button"
                     onClick={() => handleUpdateStatus("CONTACTED")}
                     disabled={isSavingStatus || charter.status === "CONTACTED"}
-                    className="px-2.5 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[11px] font-medium transition-colors disabled:opacity-40"
+                    className="px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-[11px] font-medium transition-colors disabled:opacity-40 cursor-pointer"
                   >
                     Mark Contacted
                   </button>
@@ -565,7 +565,7 @@ export const CharterDetail: React.FC = () => {
                     type="button"
                     onClick={() => handleUpdateStatus("QUOTE_SENT")}
                     disabled={isSavingStatus || charter.status === "QUOTE_SENT"}
-                    className="px-2.5 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[11px] font-medium transition-colors disabled:opacity-40"
+                    className="px-2.5 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 text-[11px] font-medium transition-colors disabled:opacity-40 cursor-pointer"
                   >
                     Mark Quote Sent
                   </button>
@@ -573,7 +573,7 @@ export const CharterDetail: React.FC = () => {
                     type="button"
                     onClick={() => handleUpdateStatus("CONFIRMED")}
                     disabled={isSavingStatus || charter.status === "CONFIRMED"}
-                    className="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-medium transition-colors disabled:opacity-40"
+                    className="px-2.5 py-1.5 rounded-lg bg-lime-50 hover:bg-lime-100 text-lime-700 border border-lime-200 text-[11px] font-medium transition-colors disabled:opacity-40 cursor-pointer"
                   >
                     Confirm Charter
                   </button>
@@ -581,7 +581,7 @@ export const CharterDetail: React.FC = () => {
                     type="button"
                     onClick={() => handleUpdateStatus("CLOSED")}
                     disabled={isSavingStatus || charter.status === "CLOSED"}
-                    className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] font-medium transition-colors disabled:opacity-40"
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-[11px] font-medium transition-colors disabled:opacity-40 cursor-pointer"
                   >
                     Close Inquiry
                   </button>
@@ -591,18 +591,18 @@ export const CharterDetail: React.FC = () => {
           </div>
 
           {/* 2. Internal Notes & Operator Assignment Panel */}
-          <div className="bg-aviation-900 border border-aviation-800 rounded-xl overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-aviation-800 bg-aviation-850/40">
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-slate-50">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-aviation-800">
-                  <FileText className="h-4 w-4 text-amber-400" />
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 border border-orange-100">
+                  <FileText className="h-4 w-4 text-orange-500" />
                 </div>
-                <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-300">
+                <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-800">
                   Internal Operations Notes
                 </h3>
               </div>
 
-              <span className="text-[10px] font-mono text-slate-500">
+              <span className="text-[10px] font-mono text-slate-400">
                 Updated: {formatOperationalDateTime(charter.updated_at)}
               </span>
             </div>
@@ -610,7 +610,7 @@ export const CharterDetail: React.FC = () => {
             <div className="p-5 space-y-4">
               {/* Staff Assignment */}
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block">
                   Assigned Duty Officer
                 </label>
                 <input
@@ -618,13 +618,13 @@ export const CharterDetail: React.FC = () => {
                   value={assignedStaff}
                   onChange={(e) => setAssignedStaff(e.target.value)}
                   placeholder="e.g. Duty Officer / Charter Desk Lead"
-                  className="w-full bg-aviation-850 border border-aviation-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-aviation-gold transition-colors"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 transition-colors"
                 />
               </div>
 
               {/* Running Notes Textarea */}
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block">
                   Running Internal Notes
                 </label>
                 <textarea
@@ -632,7 +632,7 @@ export const CharterDetail: React.FC = () => {
                   value={internalNotes}
                   onChange={(e) => setInternalNotes(e.target.value)}
                   placeholder="Add operator logs, aircraft availability checks, pricing notes, quote numbers, customer communication logs..."
-                  className="w-full bg-aviation-850 border border-aviation-700 rounded-lg p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-aviation-gold transition-colors font-mono leading-relaxed"
+                  className="w-full bg-white border border-slate-200 rounded-lg p-3 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 transition-colors font-mono leading-relaxed"
                 />
               </div>
 
@@ -642,7 +642,7 @@ export const CharterDetail: React.FC = () => {
                   type="button"
                   onClick={handleSaveNotes}
                   disabled={isSavingNotes}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-aviation-800 hover:bg-aviation-700 hover:text-aviation-gold border border-aviation-700 transition-all disabled:opacity-50 select-none cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-all disabled:opacity-50 select-none cursor-pointer shadow-xs"
                 >
                   <Save className={`h-3.5 w-3.5 ${isSavingNotes ? "animate-spin" : ""}`} />
                   <span>{isSavingNotes ? "Saving..." : "Save Notes & Assignment"}</span>
@@ -659,11 +659,11 @@ export const CharterDetail: React.FC = () => {
 /* ─── Helper Components ─── */
 const Field: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <div className="flex flex-col gap-0.5">
-    <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
+    <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
       {label}
     </span>
-    <span className="text-white font-medium">
-      {value || <span className="text-slate-600">—</span>}
+    <span className="text-slate-900 font-medium">
+      {value || <span className="text-slate-300">—</span>}
     </span>
   </div>
 );
@@ -671,7 +671,7 @@ const Field: React.FC<{ label: string; value: React.ReactNode }> = ({ label, val
 const BackButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 bg-aviation-850 hover:bg-aviation-800 hover:text-white border border-aviation-800 transition-colors cursor-pointer"
+    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-slate-900 border border-slate-200 shadow-xs transition-colors cursor-pointer"
   >
     <ArrowLeft className="h-3.5 w-3.5" />
     Charter Desk

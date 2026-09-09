@@ -68,33 +68,43 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
   }, []);
 
   const loadHistory = useCallback(
-    async (isManual = false) => {
+    async (silent = false) => {
       if (!bookingRef) return;
+
+      if (!silent) {
+        setIsLoading(true);
+        setError(null);
+      } else {
+        setIsRefreshing(true);
+      }
+
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      if (isManual) {
-        setIsRefreshing(true);
-      } else {
-        setIsLoading(true);
+      try {
+        const res = await fetchBookingNotifications(bookingRef, controller.signal);
+        if (!isMountedRef.current) return;
+
+        if (res.error) {
+          setError(res.error);
+        } else if (res.data) {
+          setRecords(res.data);
+          setError(null);
+        }
+      } catch (err: any) {
+        if (!isMountedRef.current) return;
+        if (err.name !== "AbortError") {
+          setError(err.message || "Failed to load communication history");
+        }
+      } finally {
+        if (isMountedRef.current) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
       }
-      setError(null);
-
-      const res = await fetchBookingNotifications(bookingRef, controller.signal);
-
-      if (!isMountedRef.current) return;
-
-      if (res.error) {
-        setError(res.error);
-      } else if (res.data) {
-        setRecords(res.data);
-      }
-
-      setIsLoading(false);
-      setIsRefreshing(false);
     },
     [bookingRef]
   );
@@ -103,35 +113,34 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
     loadHistory();
   }, [loadHistory]);
 
-  // Handle Retry
   const handleRetry = async () => {
     if (onRetryNotifications) {
       onRetryNotifications();
       return;
     }
 
-    if (!bookingRef || localIsRetrying) return;
     setLocalIsRetrying(true);
     setRetryMessage(null);
 
-    const res = await retryBookingConfirmationNotices(bookingRef);
-
-    if (!isMountedRef.current) return;
-    setLocalIsRetrying(false);
-
-    if (res.error) {
-      setRetryMessage({ text: res.error, isError: true });
-    } else {
+    try {
+      const res = await retryBookingConfirmationNotices(bookingRef);
+      if (res.error) {
+        setRetryMessage({ text: res.error, isError: true });
+        setRetryMessage({
+          text: res.message || "Confirmation notices successfully queued for retry.",
+          isError: false,
+        });
+        await loadHistory(true);
+      }
+    } catch (err: any) {
       setRetryMessage({
-        text: res.message || "Confirmation notices re-queued.",
-        isError: false,
+        text: err.message || "Failed to trigger retry.",
+        isError: true,
       });
-      // Refresh list after 1.5s to capture newly created records
-      setTimeout(() => {
-        if (isMountedRef.current) {
-          loadHistory(true);
-        }
-      }, 1500);
+    } finally {
+      if (isMountedRef.current) {
+        setLocalIsRetrying(false);
+      }
     }
   };
 
@@ -152,18 +161,18 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
   const failedCount = records.filter((r) => (r.status || "").toUpperCase() === "FAILED").length;
 
   return (
-    <div className="bg-aviation-900 border border-aviation-800 rounded-xl overflow-hidden shadow-sm space-y-0">
+    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs space-y-0">
       {/* 1. Header Bar */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-aviation-800 bg-aviation-850/40">
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-slate-50/50">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-aviation-800">
-            <MessageSquare className="h-4 w-4 text-sky-400" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-50 border border-sky-200">
+            <MessageSquare className="h-4 w-4 text-sky-600" />
           </div>
           <div>
-            <h3 className="text-xs font-display font-semibold uppercase tracking-wider text-slate-300">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
               Communications & Delivery Audit
             </h3>
-            <span className="text-[10px] font-mono text-slate-500">
+            <span className="text-[10px] text-slate-400 font-medium">
               Authoritative dispatch log from database
             </span>
           </div>
@@ -175,10 +184,10 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
             type="button"
             onClick={() => loadHistory(true)}
             disabled={isLoading || isRefreshing}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white bg-aviation-850 hover:bg-aviation-800 border border-aviation-800 transition-colors disabled:opacity-50 select-none cursor-pointer"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-xs transition-all disabled:opacity-50 select-none cursor-pointer"
             title="Refresh communication history"
           >
-            <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3 w-3 text-slate-500 ${isRefreshing ? "animate-spin" : ""}`} />
             <span>{isRefreshing ? "Syncing..." : "Sync"}</span>
           </button>
 
@@ -187,7 +196,7 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
               type="button"
               onClick={handleRetry}
               disabled={isRetrying}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:text-white bg-sky-500/10 hover:bg-sky-600 border border-sky-500/30 hover:border-sky-600 transition-all disabled:opacity-50 select-none cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 shadow-xs transition-all disabled:opacity-50 select-none cursor-pointer"
             >
               <Send className={`h-3 w-3 ${isRetrying ? "animate-pulse" : ""}`} />
               <span>{isRetrying ? "Queuing..." : "Retry Notices"}</span>
@@ -200,16 +209,16 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
         {/* Retry Message Alert */}
         {retryMessage && (
           <div
-            className={`p-3 rounded-lg border text-xs flex items-center justify-between gap-2 ${
+            className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${
               retryMessage.isError
-                ? "bg-red-500/10 border-red-500/30 text-red-300"
-                : "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+                ? "bg-rose-50 border-rose-200 text-rose-800"
+                : "bg-lime-50 border-lime-200 text-lime-800"
             }`}
           >
-            <span>{retryMessage.text}</span>
+            <span className="font-medium">{retryMessage.text}</span>
             <button
               onClick={() => setRetryMessage(null)}
-              className="text-slate-400 hover:text-white text-[10px] font-mono"
+              className="text-slate-400 hover:text-slate-700 text-xs font-semibold"
             >
               Dismiss
             </button>
@@ -219,12 +228,12 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
         {/* 2. Channel Overview Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* WhatsApp */}
-          <div className="bg-aviation-850/60 p-3 rounded-lg border border-aviation-800 flex items-center justify-between">
+          <div className="bg-lime-50/40 p-3 rounded-xl border border-lime-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-emerald-400" />
+              <MessageSquare className="h-4 w-4 text-lime-600" />
               <div>
-                <span className="text-[10px] font-mono uppercase text-slate-500 block">WhatsApp</span>
-                <span className="text-xs text-white font-medium">
+                <span className="text-[10px] font-semibold uppercase text-slate-500 block">WhatsApp</span>
+                <span className="text-xs text-slate-900 font-semibold">
                   {records.some((r) => r.channel?.toUpperCase().includes("WHATSAPP") && r.status === "DELIVERED")
                     ? "Delivered"
                     : isConfirmed
@@ -233,16 +242,16 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
                 </span>
               </div>
             </div>
-            {deliveredCount > 0 && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />}
+            {deliveredCount > 0 && <CheckCircle2 className="h-4 w-4 text-lime-600" />}
           </div>
 
           {/* Email */}
-          <div className="bg-aviation-850/60 p-3 rounded-lg border border-aviation-800 flex items-center justify-between">
+          <div className="bg-sky-50/40 p-3 rounded-xl border border-sky-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-sky-400" />
+              <Mail className="h-4 w-4 text-sky-600" />
               <div>
-                <span className="text-[10px] font-mono uppercase text-slate-500 block">Email Notice</span>
-                <span className="text-xs text-white font-medium">
+                <span className="text-[10px] font-semibold uppercase text-slate-500 block">Email Notice</span>
+                <span className="text-xs text-slate-900 font-semibold">
                   {records.some((r) => r.channel?.toUpperCase().includes("EMAIL") && r.status === "DELIVERED")
                     ? "Delivered"
                     : isConfirmed
@@ -251,16 +260,16 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
                 </span>
               </div>
             </div>
-            {deliveredCount > 0 && <CheckCircle2 className="h-3.5 w-3.5 text-sky-400" />}
+            {deliveredCount > 0 && <CheckCircle2 className="h-4 w-4 text-sky-600" />}
           </div>
 
           {/* Invoice PDF */}
-          <div className="bg-aviation-850/60 p-3 rounded-lg border border-aviation-800 flex items-center justify-between">
+          <div className="bg-orange-50/40 p-3 rounded-xl border border-orange-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileCheck2 className="h-4 w-4 text-amber-400" />
+              <FileCheck2 className="h-4 w-4 text-orange-600" />
               <div>
-                <span className="text-[10px] font-mono uppercase text-slate-500 block">Tax Invoice PDF</span>
-                <span className="text-xs text-white font-medium">
+                <span className="text-[10px] font-semibold uppercase text-slate-500 block">Tax Invoice PDF</span>
+                <span className="text-xs text-slate-900 font-semibold">
                   {records.some((r) => r.templateType?.toUpperCase().includes("INVOICE") && r.status === "DELIVERED")
                     ? "Attached / Sent"
                     : isConfirmed
@@ -269,18 +278,18 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
                 </span>
               </div>
             </div>
-            {isConfirmed && <CheckCircle2 className="h-3.5 w-3.5 text-amber-400" />}
+            {isConfirmed && <CheckCircle2 className="h-4 w-4 text-orange-600" />}
           </div>
         </div>
 
         {/* 3. Communication History Table */}
-        <div className="space-y-2 pt-2 border-t border-aviation-800">
+        <div className="space-y-2 pt-2 border-t border-slate-100">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-mono text-slate-400 text-[11px] uppercase tracking-wider font-semibold">
+            <span className="text-slate-500 text-[11px] uppercase tracking-wider font-semibold">
               Dispatch History ({records.length})
             </span>
             {failedCount > 0 && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-mono text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/30">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
                 <AlertTriangle className="h-3 w-3" />
                 {failedCount} Failed Notice{failedCount > 1 ? "s" : ""}
               </span>
@@ -289,27 +298,27 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
 
           {/* Loading View */}
           {isLoading ? (
-            <div className="p-8 text-center flex flex-col items-center justify-center gap-2 bg-aviation-850/40 rounded-lg border border-aviation-800">
-              <div className="h-5 w-5 border-2 border-aviation-gold/30 border-t-aviation-gold rounded-full animate-spin" />
-              <span className="text-xs text-slate-400 font-mono">Loading communication history...</span>
+            <div className="p-8 text-center flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="h-5 w-5 border-2 border-lime-600/30 border-t-lime-600 rounded-full animate-spin" />
+              <span className="text-xs text-slate-500 font-medium">Loading communication history...</span>
             </div>
           ) : error ? (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-xs flex items-center justify-between text-red-300 font-mono">
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs flex items-center justify-between text-rose-800">
               <span>{error}</span>
-              <button onClick={() => loadHistory()} className="underline hover:text-white">
+              <button onClick={() => loadHistory()} className="underline font-semibold hover:text-rose-950">
                 Retry
               </button>
             </div>
           ) : records.length === 0 ? (
-            <div className="p-6 text-center bg-aviation-850/40 rounded-lg border border-aviation-800 text-xs font-mono text-slate-500 space-y-1">
-              <p className="text-slate-400 font-medium">No communication records found for this booking.</p>
+            <div className="p-6 text-center bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-500 space-y-1">
+              <p className="text-slate-700 font-semibold">No communication records found for this booking.</p>
               <p className="text-[11px]">Outbound notices will appear here once dispatched.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-aviation-800 bg-aviation-850/30">
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-aviation-800 bg-aviation-850/80 text-[10px] font-mono uppercase tracking-widest text-slate-400">
+                  <tr className="border-b border-slate-200 bg-slate-50/80 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
                     <th className="py-2.5 px-3">Channel / Type</th>
                     <th className="py-2.5 px-3">Recipient</th>
                     <th className="py-2.5 px-3">Status</th>
@@ -318,7 +327,7 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
                     <th className="py-2.5 px-3 text-right">Attempts</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-aviation-800/60 font-mono">
+                <tbody className="divide-y divide-slate-100">
                   {records.map((rec) => {
                     const status = (rec.status || "").toUpperCase();
                     const isFailed = status === "FAILED";
@@ -331,30 +340,30 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
 
                     return (
                       <React.Fragment key={rec.id}>
-                        <tr className="hover:bg-aviation-800/30 transition-colors">
+                        <tr className="hover:bg-slate-50/60 transition-colors">
                           {/* Channel & Template */}
                           <td className="py-3 px-3 whitespace-nowrap">
                             <div className="flex items-center gap-1.5">
                               {isWhatsApp ? (
-                                <MessageSquare className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
+                                <MessageSquare className="h-3.5 w-3.5 text-lime-600 shrink-0" />
                               ) : isEmail ? (
-                                <Mail className="h-3.5 w-3.5 text-sky-400 flex-shrink-0" />
+                                <Mail className="h-3.5 w-3.5 text-sky-600 shrink-0" />
                               ) : (
-                                <Radio className="h-3.5 w-3.5 text-amber-400 flex-shrink-0" />
+                                <Radio className="h-3.5 w-3.5 text-orange-600 shrink-0" />
                               )}
-                              <span className="font-medium text-white text-[11px]">
+                              <span className="font-semibold text-slate-900 text-[11px]">
                                 {formatTemplateName(rec.templateType)}
                               </span>
                             </div>
-                            <div className="text-[10px] text-slate-500 mt-0.5 uppercase">
+                            <div className="text-[10px] text-slate-400 mt-0.5 uppercase">
                               {rec.channel}
                             </div>
                           </td>
 
                           {/* Recipient */}
-                          <td className="py-3 px-3 max-w-[160px] truncate text-slate-300 text-[11px]" title={rec.recipientEmail || rec.recipientPhone || "—"}>
+                          <td className="py-3 px-3 max-w-[160px] truncate text-slate-700 text-[11px] font-medium" title={rec.recipientEmail || rec.recipientPhone || "—"}>
                             {rec.recipientEmail || rec.recipientPhone || (
-                              <span className="text-slate-500">—</span>
+                              <span className="text-slate-400">—</span>
                             )}
                           </td>
 
@@ -363,14 +372,14 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
                             <span
                               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold border ${
                                 isDelivered
-                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                  ? "bg-lime-50 text-lime-700 border-lime-200"
                                   : isFailed
-                                  ? "bg-red-500/10 text-red-400 border-red-500/30"
+                                  ? "bg-rose-50 text-rose-700 border-rose-200"
                                   : status === "SENDING"
-                                  ? "bg-indigo-500/10 text-indigo-300 border-indigo-500/30"
+                                  ? "bg-sky-50 text-sky-700 border-sky-200"
                                   : status === "BYPASSED"
-                                  ? "bg-slate-800 text-slate-400 border-slate-700"
-                                  : "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                                  ? "bg-slate-100 text-slate-600 border-slate-200"
+                                  : "bg-orange-50 text-orange-700 border-orange-200"
                               }`}
                             >
                               {isDelivered && <Check className="h-2.5 w-2.5" />}
@@ -382,30 +391,30 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
                           {/* Provider Message ID */}
                           <td className="py-3 px-3 whitespace-nowrap">
                             {rec.messageId ? (
-                              <div className="inline-flex items-center gap-1 text-[11px] text-slate-300 bg-aviation-800/80 px-2 py-0.5 rounded border border-aviation-700/60 max-w-[140px] truncate">
-                                <span className="truncate" title={rec.messageId}>
+                              <div className="inline-flex items-center gap-1 text-[11px] text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-200 max-w-[140px] truncate">
+                                <span className="truncate font-mono" title={rec.messageId}>
                                   {rec.messageId}
                                 </span>
                                 <button
                                   type="button"
                                   onClick={() => handleCopyMessageId(rec.id, rec.messageId!)}
-                                  className="text-slate-400 hover:text-white ml-0.5"
+                                  className="text-slate-400 hover:text-slate-700 ml-0.5"
                                   title="Copy Message ID"
                                 >
                                   {copiedId === rec.id ? (
-                                    <Check className="h-3 w-3 text-emerald-400" />
+                                    <Check className="h-3 w-3 text-lime-600" />
                                   ) : (
                                     <Copy className="h-3 w-3" />
                                   )}
                                 </button>
                               </div>
                             ) : (
-                              <span className="text-slate-600 text-[11px]">—</span>
+                              <span className="text-slate-400 text-[11px]">—</span>
                             )}
                           </td>
 
                           {/* Sent Time in IST */}
-                          <td className="py-3 px-3 whitespace-nowrap text-slate-300 text-[11px]">
+                          <td className="py-3 px-3 whitespace-nowrap text-slate-600 text-[11px]">
                             {rec.deliveredAt
                               ? formatOperationalDateTime(rec.deliveredAt)
                               : rec.createdAt
@@ -415,13 +424,13 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
 
                           {/* Attempts */}
                           <td className="py-3 px-3 text-right whitespace-nowrap">
-                            <span className="text-slate-400 text-[10px]">
+                            <span className="text-slate-500 text-[10px] font-mono">
                               {rec.attempts || 1}/{rec.maxAttempts || 3}
                             </span>
                             {isFailed && rec.errorLog && (
                               <button
                                 onClick={() => setExpandedRowId(isExpanded ? null : rec.id)}
-                                className="ml-2 text-red-400 hover:underline text-[10px] inline-flex items-center"
+                                className="ml-2 text-rose-600 hover:underline text-[10px] inline-flex items-center font-medium"
                                 title="View error details"
                               >
                                 {isExpanded ? (
@@ -436,13 +445,13 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
 
                         {/* Expandable Error Detail Row */}
                         {isExpanded && rec.errorLog && (
-                          <tr className="bg-red-500/5 border-b border-red-500/20">
+                          <tr className="bg-rose-50/50 border-b border-rose-100">
                             <td colSpan={6} className="py-2.5 px-4 text-xs">
-                              <div className="flex items-start gap-2 text-red-300 font-mono text-[11px] bg-red-950/30 p-2 rounded border border-red-500/20">
-                                <AlertTriangle className="h-3.5 w-3.5 text-red-400 flex-shrink-0 mt-0.5" />
+                              <div className="flex items-start gap-2 text-rose-800 text-[11px] bg-white p-3 rounded-lg border border-rose-200 shadow-xs">
+                                <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
                                 <div className="space-y-0.5">
-                                  <span className="font-semibold text-red-200">Failure Reason:</span>
-                                  <p className="break-all">{rec.errorLog}</p>
+                                  <span className="font-semibold text-rose-900">Failure Reason:</span>
+                                  <p className="break-all font-mono">{rec.errorLog}</p>
                                 </div>
                               </div>
                             </td>
@@ -458,16 +467,16 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({
         </div>
 
         {/* Informative Footer */}
-        <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-aviation-800/60">
+        <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
           <div className="flex items-center gap-1.5">
             <span>Customer Phone:</span>
-            <span className="text-slate-200">{booking.passengerPhone || "—"}</span>
-            <span className="text-slate-600">·</span>
+            <span className="text-slate-800 font-mono font-medium">{booking.passengerPhone || "—"}</span>
+            <span className="text-slate-300">·</span>
             <span>Email:</span>
-            <span className="text-slate-200">{booking.passengerEmail || "—"}</span>
+            <span className="text-slate-800 font-mono font-medium">{booking.passengerEmail || "—"}</span>
           </div>
 
-          <span className="text-slate-500 text-[10px]">
+          <span className="text-slate-400 text-[10px]">
             Delivery tracking via Resend & Meta Cloud API
           </span>
         </div>

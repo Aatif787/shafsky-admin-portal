@@ -86,7 +86,7 @@ export const OperationsFilters: React.FC<OperationsFiltersProps> = ({
     search.trim() !== "" || airport !== "ALL" || status !== "ALL" || serviceDate.trim() !== "";
 
   return (
-    <div className="bg-aviation-900 border border-aviation-800 rounded-xl p-4 space-y-3 shadow-sm">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-xs">
       <div className="flex flex-col lg:flex-row gap-3">
         {/* Search Input */}
         <div className="relative flex-1">
@@ -96,12 +96,12 @@ export const OperationsFilters: React.FC<OperationsFiltersProps> = ({
             value={localSearch}
             onChange={handleInputChange}
             placeholder="Search reference (SHF-...), passenger, flight #, duty officer..."
-            className="w-full bg-aviation-850 border border-aviation-700/60 rounded-lg pl-10 pr-9 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-aviation-gold focus:ring-1 focus:ring-aviation-gold transition-colors font-mono"
+            className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-9 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-lime-500 focus:ring-2 focus:ring-lime-500/20 transition-all font-mono shadow-xs"
           />
           {localSearch && (
             <button
               onClick={handleClearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
               aria-label="Clear search"
             >
               <X className="h-3.5 w-3.5" />
@@ -111,15 +111,15 @@ export const OperationsFilters: React.FC<OperationsFiltersProps> = ({
 
         {/* Airport Select */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1 bg-aviation-850 border border-aviation-700/60 rounded-lg px-2 py-1">
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-xs">
             <MapPin className="h-3.5 w-3.5 text-slate-400" />
             <select
               value={airport}
               onChange={(e) => onAirportChange(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer pr-2"
+              className="bg-transparent text-xs font-medium text-slate-700 focus:outline-none cursor-pointer pr-2"
             >
               {AIRPORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-aviation-900 text-white">
+                <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
@@ -127,15 +127,15 @@ export const OperationsFilters: React.FC<OperationsFiltersProps> = ({
           </div>
 
           {/* Status Select */}
-          <div className="flex items-center gap-1 bg-aviation-850 border border-aviation-700/60 rounded-lg px-2 py-1">
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-xs">
             <Filter className="h-3.5 w-3.5 text-slate-400" />
             <select
               value={status}
               onChange={(e) => onStatusChange(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer pr-2"
+              className="bg-transparent text-xs font-medium text-slate-700 focus:outline-none cursor-pointer pr-2"
             >
               {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-aviation-900 text-white">
+                <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
@@ -143,18 +143,18 @@ export const OperationsFilters: React.FC<OperationsFiltersProps> = ({
           </div>
 
           {/* Date Filter */}
-          <div className="flex items-center gap-1 bg-aviation-850 border border-aviation-700/60 rounded-lg px-2 py-1">
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-xs">
             <Calendar className="h-3.5 w-3.5 text-slate-400" />
             <input
               type="date"
               value={serviceDate}
               onChange={(e) => onServiceDateChange(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer font-mono"
+              className="bg-transparent text-xs font-medium text-slate-700 focus:outline-none cursor-pointer font-mono"
             />
             {serviceDate && (
               <button
                 onClick={() => onServiceDateChange("")}
-                className="text-slate-400 hover:text-white text-xs"
+                className="text-slate-400 hover:text-slate-700 text-xs"
                 title="Clear date"
               >
                 <X className="h-3 w-3" />
@@ -165,9 +165,9 @@ export const OperationsFilters: React.FC<OperationsFiltersProps> = ({
       </div>
 
       {/* Counter & Reset */}
-      <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-1 border-t border-aviation-800/60">
+      <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 pt-2 border-t border-slate-100">
         <span>
-          Active operations: <strong className="text-white">{totalCount}</strong> services
+          Active operations: <strong className="text-slate-900 font-semibold">{totalCount}</strong> services
         </span>
 
         {isFiltered && (
@@ -178,7 +178,7 @@ export const OperationsFilters: React.FC<OperationsFiltersProps> = ({
               onStatusChange("ALL");
               onServiceDateChange("");
             }}
-            className="text-aviation-gold hover:underline text-[11px]"
+            className="text-lime-700 hover:text-lime-900 font-semibold text-xs transition-colors"
           >
             Reset Filters
           </button>

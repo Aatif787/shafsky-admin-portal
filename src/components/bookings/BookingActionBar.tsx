@@ -26,11 +26,12 @@ export const BookingActionBar: React.FC<BookingActionBarProps> = ({
   const isTerminal = status === "COMPLETED" || status === "CANCELLED" || status === "REJECTED";
 
   return (
-    <div className="bg-aviation-900 border border-aviation-800 rounded-md p-4 space-y-3">
+    <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-xs">
       <div>
-        <div className="text-[11px] text-slate-500">Operational actions</div>
-        <div className="mt-1 text-[13px] text-white">
-          {booking.status} <span className="text-slate-500">v{booking.version || 1}</span>
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Operational Actions</div>
+        <div className="mt-1 text-sm font-bold text-slate-900 flex items-center justify-between">
+          <span>{booking.status}</span>
+          <span className="text-xs font-mono font-medium text-slate-400">v{booking.version || 1}</span>
         </div>
       </div>
       <div className="flex flex-col gap-2">
@@ -39,10 +40,10 @@ export const BookingActionBar: React.FC<BookingActionBarProps> = ({
             type="button"
             onClick={onOpenConfirm}
             disabled={isLoading}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-medium text-white bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold text-white bg-lime-600 hover:bg-lime-700 shadow-xs disabled:opacity-50 transition-all"
           >
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Confirm booking
+            <CheckCircle2 className="h-4 w-4" />
+            Confirm Booking
           </button>
         )}
         {(status === "CONFIRMED" || status === "ASSIGNED") && (
@@ -50,10 +51,10 @@ export const BookingActionBar: React.FC<BookingActionBarProps> = ({
             type="button"
             onClick={() => onOpenAdvance("IN_PROGRESS")}
             disabled={isLoading}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-medium text-white bg-slate-700 hover:bg-slate-600 disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 shadow-xs disabled:opacity-50 transition-all"
           >
-            <Play className="h-3.5 w-3.5" />
-            Start service
+            <Play className="h-4 w-4" />
+            Start Service
           </button>
         )}
         {status === "IN_PROGRESS" && (
@@ -61,10 +62,10 @@ export const BookingActionBar: React.FC<BookingActionBarProps> = ({
             type="button"
             onClick={() => onOpenAdvance("COMPLETED")}
             disabled={isLoading}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-medium text-white bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs disabled:opacity-50 transition-all"
           >
-            <CheckCheck className="h-3.5 w-3.5" />
-            Complete service
+            <CheckCheck className="h-4 w-4" />
+            Complete Service
           </button>
         )}
         {!isTerminal && (
@@ -72,10 +73,10 @@ export const BookingActionBar: React.FC<BookingActionBarProps> = ({
             type="button"
             onClick={onOpenCancel}
             disabled={isLoading}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-medium text-rose-300 border border-rose-900/60 hover:bg-rose-950/40 disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 disabled:opacity-50 transition-all"
           >
             <XCircle className="h-3.5 w-3.5" />
-            Cancel booking
+            Cancel Booking
           </button>
         )}
         {canRecycle && onOpenRecycle && (
@@ -83,14 +84,14 @@ export const BookingActionBar: React.FC<BookingActionBarProps> = ({
             type="button"
             onClick={onOpenRecycle}
             disabled={isLoading}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-medium text-slate-300 border border-aviation-800 hover:border-rose-900 hover:text-rose-300 disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 transition-all shadow-xs"
           >
-            <Trash2 className="h-3.5 w-3.5" />
-            Move to bin
+            <Trash2 className="h-3.5 w-3.5 text-slate-400" />
+            Move to Bin
           </button>
         )}
         {isTerminal && !canRecycle && (
-          <p className="text-[12px] text-slate-500">Terminal state — read only.</p>
+          <p className="text-xs text-slate-400 text-center font-medium">Terminal state — read only.</p>
         )}
       </div>
     </div>

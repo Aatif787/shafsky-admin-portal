@@ -5,6 +5,8 @@ import { fetchRecycleBin, recycleBooking, restoreBooking, purgeBooking } from ".
 import type { DashboardData, BookingRecord } from "../types/dashboard";
 import { DashboardHeader } from "../components/dashboard/DashboardHeader";
 import { SummaryCards } from "../components/dashboard/SummaryCards";
+import { CharterSummaryCard } from "../components/dashboard/CharterSummaryCard";
+import { OperationsSummaryCard } from "../components/dashboard/OperationsSummaryCard";
 import { AttentionPanel } from "../components/dashboard/AttentionPanel";
 import { UpcomingBookings } from "../components/dashboard/UpcomingBookings";
 import { RecentActivity } from "../components/dashboard/RecentActivity";
@@ -132,10 +134,10 @@ export const Dashboard: React.FC = () => {
   if (error && !data) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="max-w-md w-full border border-aviation-800 bg-aviation-900 p-6 text-center space-y-3">
-          <AlertCircle className="h-6 w-6 text-rose-400 mx-auto" />
-          <h2 className="text-sm font-semibold text-white">Unable to connect to operations service.</h2>
-          <p className="text-[12px] text-slate-400">{error}</p>
+        <div className="max-w-md w-full border border-slate-200 bg-white rounded-2xl p-8 text-center space-y-4 shadow-sm">
+          <AlertCircle className="h-8 w-8 text-rose-500 mx-auto" />
+          <h2 className="text-base font-bold text-slate-900">Unable to connect to operations service.</h2>
+          <p className="text-xs text-slate-500">{error}</p>
           <button
             type="button"
             onClick={() => {
@@ -143,10 +145,10 @@ export const Dashboard: React.FC = () => {
               loadData(true);
               loadBin();
             }}
-            className="inline-flex items-center gap-1.5 rounded-md border border-aviation-800 px-3 py-1.5 text-[12px] text-slate-200 hover:bg-aviation-850"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 transition-all"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            Retry
+            Retry Connection
           </button>
         </div>
       </div>
@@ -154,7 +156,7 @@ export const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="space-y-5 pb-8">
+    <div className="space-y-6 pb-8">
       <DashboardHeader
         lastUpdated={data?.lastUpdated}
         isRefreshing={isRefreshing}
@@ -163,22 +165,34 @@ export const Dashboard: React.FC = () => {
           loadBin();
         }}
       />
+
       <SummaryCards
         metrics={data?.metrics}
         isLoading={isLoading}
         binCount={canManageBin ? binTotal : null}
       />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CharterSummaryCard metrics={data?.charterMetrics} isLoading={isLoading} />
+        <OperationsSummaryCard metrics={data?.operationsMetrics} isLoading={isLoading} />
+      </div>
+
       {canManageBin && binNotice && (
-        <div className="border border-emerald-900/50 bg-emerald-950/20 rounded-md px-3 py-2 text-[12px] text-emerald-200">
-          {binNotice}
+        <div className="border border-lime-200 bg-lime-50 rounded-xl px-4 py-3 text-xs font-semibold text-lime-800 shadow-xs flex items-center justify-between">
+          <span>{binNotice}</span>
+          <button onClick={() => setBinNotice(null)} className="text-lime-600 hover:text-lime-900">✕</button>
         </div>
       )}
+
       {canManageBin && binError && (
-        <div className="border border-rose-900/60 bg-rose-950/30 rounded-md px-3 py-2 text-[12px] text-rose-200">
-          {binError}
+        <div className="border border-rose-200 bg-rose-50 rounded-xl px-4 py-3 text-xs font-semibold text-rose-800 shadow-xs flex items-center justify-between">
+          <span>{binError}</span>
+          <button onClick={() => setBinError(null)} className="text-rose-600 hover:text-rose-900">✕</button>
         </div>
       )}
+
       <AttentionPanel items={data?.attentionItems || []} isLoading={isLoading} />
+
       <UpcomingBookings
         bookings={data?.recentBookings || []}
         isLoading={isLoading}
@@ -188,6 +202,7 @@ export const Dashboard: React.FC = () => {
           setRecycleTarget(booking);
         }}
       />
+
       {canManageBin && (
         <DashboardRecyclePanel
           items={binItems}
@@ -199,6 +214,7 @@ export const Dashboard: React.FC = () => {
           onPurge={(booking) => setPurgeTarget(booking)}
         />
       )}
+
       <RecentActivity logs={data?.auditLogs || []} isLoading={isLoading} />
 
       {recycleTarget && (

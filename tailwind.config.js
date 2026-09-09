@@ -8,17 +8,17 @@ export default {
     extend: {
       colors: {
         aviation: {
-          950: "#070B14",
-          900: "#0B1220",
-          850: "#0F182B",
-          800: "#131F37",
-          700: "#1D2D4F",
-          600: "#2B3F6C",
-          gold: "#C4A35A",
-          "gold-light": "#E6D3A3",
-          amber: "#F59E0B",
-          cyan: "#06B6D4",
-          emerald: "#10B981",
+          950: "#FAFBFC",
+          900: "#FFFFFF",
+          850: "#F1F5F9",
+          800: "#E2E8F0",
+          700: "#CBD5E1",
+          600: "#94A3B8",
+          gold: "#65A30D",
+          "gold-light": "#84CC16",
+          amber: "#EA580C",
+          cyan: "#0EA5E9",
+          emerald: "#16A34A",
         },
       },
       fontFamily: {

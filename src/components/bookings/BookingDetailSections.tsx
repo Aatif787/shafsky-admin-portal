@@ -35,12 +35,12 @@ interface SectionCardProps {
 }
 
 const SectionCard: React.FC<SectionCardProps> = ({ title, icon, children }) => (
-  <div className="bg-aviation-900 border border-aviation-800 rounded-md overflow-hidden">
-    <div className="flex items-center gap-2 px-4 py-2.5 border-b border-aviation-800">
+  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 bg-slate-50/50">
       {icon}
-      <h3 className="text-[12px] font-semibold text-slate-200">{title}</h3>
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">{title}</h3>
     </div>
-    <div className="p-4">{children}</div>
+    <div className="p-5">{children}</div>
   </div>
 );
 
@@ -55,16 +55,16 @@ interface FieldProps {
 }
 
 const Field: React.FC<FieldProps> = ({ label, value, mono }) => (
-  <div className="flex flex-col gap-0.5">
-    <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
+  <div className="flex flex-col gap-1">
+    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
       {label}
     </span>
     <span
-      className={`text-sm text-white ${
+      className={`text-xs font-medium text-slate-900 ${
         mono ? "font-mono tracking-wide" : ""
       }`}
     >
-      {value || <span className="text-slate-600">—</span>}
+      {value || <span className="text-slate-400">—</span>}
     </span>
   </div>
 );
@@ -74,11 +74,11 @@ const Field: React.FC<FieldProps> = ({ label, value, mono }) => (
    ═══════════════════════════════════════════ */
 
 export const OverviewSection: React.FC<{ booking: BookingRecord }> = ({ booking }) => (
-  <SectionCard title="Overview" icon={<Hash className="h-4 w-4 text-aviation-gold" />}>
+  <SectionCard title="Overview" icon={<Hash className="h-4 w-4 text-lime-600" />}>
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
       <Field label="Booking Ref" value={booking.bookingRef} mono />
-      <div className="flex flex-col gap-0.5">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
+      <div className="flex flex-col gap-1">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
           Status
         </span>
         <BookingStatusBadge status={booking.status} size="md" />
@@ -101,7 +101,7 @@ export const OverviewSection: React.FC<{ booking: BookingRecord }> = ({ booking 
    ═══════════════════════════════════════════ */
 
 export const CustomerSection: React.FC<{ booking: BookingRecord }> = ({ booking }) => (
-  <SectionCard title="Customer" icon={<User className="h-4 w-4 text-sky-400" />}>
+  <SectionCard title="Customer" icon={<User className="h-4 w-4 text-sky-600" />}>
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
       <Field label="Passenger Name" value={booking.passengerName} />
       <Field label="Email" value={booking.passengerEmail} mono />
@@ -115,7 +115,7 @@ export const CustomerSection: React.FC<{ booking: BookingRecord }> = ({ booking 
    ═══════════════════════════════════════════ */
 
 export const FlightSection: React.FC<{ booking: BookingRecord }> = ({ booking }) => (
-  <SectionCard title="Flight Information" icon={<Plane className="h-4 w-4 text-violet-400" />}>
+  <SectionCard title="Flight Information" icon={<Plane className="h-4 w-4 text-violet-600" />}>
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
       <Field label="Flight Number" value={booking.flightNum} mono />
       <Field label="Origin" value={booking.originCode} mono />
@@ -129,8 +129,8 @@ export const FlightSection: React.FC<{ booking: BookingRecord }> = ({ booking })
         value={
           booking.departureTime ? (
             <span>
-              <span className="text-white">{formatOperationalDate(booking.departureTime)}</span>
-              <span className="text-slate-400 ml-1.5">
+              <span className="text-slate-900 font-medium">{formatOperationalDate(booking.departureTime)}</span>
+              <span className="text-slate-500 ml-1.5">
                 {formatOperationalTime(booking.departureTime)}
               </span>
             </span>
@@ -142,8 +142,8 @@ export const FlightSection: React.FC<{ booking: BookingRecord }> = ({ booking })
         value={
           booking.arrivalTime ? (
             <span>
-              <span className="text-white">{formatOperationalDate(booking.arrivalTime)}</span>
-              <span className="text-slate-400 ml-1.5">
+              <span className="text-slate-900 font-medium">{formatOperationalDate(booking.arrivalTime)}</span>
+              <span className="text-slate-500 ml-1.5">
                 {formatOperationalTime(booking.arrivalTime)}
               </span>
             </span>
@@ -172,7 +172,7 @@ export const ServiceSection: React.FC<{ booking: BookingRecord }> = ({ booking }
   const hasServices = Object.keys(services).length > 0 || Object.keys(options).length > 0;
 
   return (
-    <SectionCard title="Service Details" icon={<Package className="h-4 w-4 text-amber-400" />}>
+    <SectionCard title="Service Details" icon={<Package className="h-4 w-4 text-orange-600" />}>
       <div className="space-y-5">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
           <Field label="Package / Tier" value={booking.metadataJson?.package || booking.serviceType} />
@@ -181,8 +181,8 @@ export const ServiceSection: React.FC<{ booking: BookingRecord }> = ({ booking }
         </div>
 
         {hasServices && (
-          <div className="border-t border-aviation-800 pt-4">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block mb-3">
+          <div className="border-t border-slate-100 pt-4">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-2.5">
               Selected Services & Options
             </span>
             <div className="flex flex-wrap gap-2">
@@ -195,12 +195,12 @@ export const ServiceSection: React.FC<{ booking: BookingRecord }> = ({ booking }
                 return (
                   <span
                     key={key}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-aviation-800 border border-aviation-700 rounded-md text-xs text-slate-300"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700"
                   >
-                    <Tag className="h-3 w-3 text-aviation-gold" />
+                    <Tag className="h-3 w-3 text-lime-600" />
                     <span className="capitalize">{label}</span>
                     {typeof val === "string" || typeof val === "number" ? (
-                      <span className="text-aviation-gold font-mono ml-1">({String(val)})</span>
+                      <span className="text-lime-700 font-mono ml-1 font-semibold">({String(val)})</span>
                     ) : null}
                   </span>
                 );
@@ -215,16 +215,16 @@ export const ServiceSection: React.FC<{ booking: BookingRecord }> = ({ booking }
 
 /* ═══════════════════════════════════════════
    Financial Section
-   ═══════════════════════════════════════════ */
+   ══════════════════════════════════════════ */
 
 export const FinancialSection: React.FC<{ booking: BookingRecord }> = ({ booking }) => (
-  <SectionCard title="Financial" icon={<CreditCard className="h-4 w-4 text-emerald-400" />}>
+  <SectionCard title="Financial" icon={<CreditCard className="h-4 w-4 text-emerald-600" />}>
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-      <div className="flex flex-col gap-0.5">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
+      <div className="flex flex-col gap-1">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
           Total Amount
         </span>
-        <span className="text-lg font-mono font-bold text-aviation-gold">
+        <span className="text-xl font-mono font-bold text-lime-700">
           {formatCurrencyINR(booking.totalAmount)}
         </span>
       </div>
@@ -234,11 +234,11 @@ export const FinancialSection: React.FC<{ booking: BookingRecord }> = ({ booking
         value={
           booking.metadataJson?.payment_status ? (
             <span
-              className={`font-semibold uppercase text-xs ${
+              className={`inline-block px-2 py-0.5 rounded text-xs font-semibold uppercase border ${
                 (booking.metadataJson.payment_status || "").toUpperCase() === "PAID" ||
                 (booking.metadataJson.payment_status || "").toUpperCase() === "SUCCESSFUL"
-                  ? "text-emerald-400"
-                  : "text-amber-400"
+                  ? "bg-lime-50 text-lime-700 border-lime-200"
+                  : "bg-orange-50 text-orange-700 border-orange-200"
               }`}
             >
               {booking.metadataJson.payment_status}
@@ -262,8 +262,8 @@ export const NotesSection: React.FC<{ booking: BookingRecord }> = ({ booking }) 
   if (!booking.notes) return null;
 
   return (
-    <SectionCard title="Internal Notes" icon={<FileText className="h-4 w-4 text-slate-400" />}>
-      <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
+    <SectionCard title="Internal Notes" icon={<FileText className="h-4 w-4 text-slate-500" />}>
+      <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">
         {booking.notes}
       </p>
     </SectionCard>
@@ -283,14 +283,14 @@ export const MetadataSection: React.FC<{ booking: BookingRecord }> = ({ booking 
   if (entries.length === 0) return null;
 
   return (
-    <SectionCard title="Metadata" icon={<Info className="h-4 w-4 text-slate-400" />}>
+    <SectionCard title="Metadata" icon={<Info className="h-4 w-4 text-slate-500" />}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {entries.map(([key, val]) => (
-          <div key={key} className="flex flex-col gap-0.5">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
+          <div key={key} className="flex flex-col gap-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
               {key.replace(/_/g, " ")}
             </span>
-            <span className="text-sm text-slate-300 font-mono break-all">
+            <span className="text-xs text-slate-800 font-mono break-all font-medium">
               {typeof val === "object" ? JSON.stringify(val) : String(val)}
             </span>
           </div>

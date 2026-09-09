@@ -23,40 +23,51 @@ export const PaymentOperationsSection: React.FC<PaymentOperationsSectionProps> =
   const channel = meta.channel || "Web Checkout";
 
   const row = (label: string, value: React.ReactNode, mono = false) => (
-    <div className="flex flex-col gap-0.5 py-1.5 border-b border-aviation-800 last:border-0">
-      <span className="text-[11px] text-slate-500">{label}</span>
-      <span className={`text-[12px] text-white break-all ${mono ? "font-mono" : ""}`}>
-        {value || <span className="text-slate-600">—</span>}
+    <div className="flex flex-col gap-1 py-2 border-b border-slate-100 last:border-0">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{label}</span>
+      <span className={`text-xs text-slate-900 font-medium break-all ${mono ? "font-mono" : ""}`}>
+        {value || <span className="text-slate-400">—</span>}
       </span>
     </div>
   );
 
   return (
-    <div className="bg-aviation-900 border border-aviation-800 rounded-md overflow-hidden">
-      <div className="px-4 py-2.5 border-b border-aviation-800">
-        <h3 className="text-[12px] font-semibold text-slate-200">Payment</h3>
+    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50/50">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">Payment Reconciliation</h3>
       </div>
       <div className="p-4 space-y-1">
-        {row("Payment status", paymentStatusRaw)}
-        {row("Amount", formatCurrencyINR(booking.totalAmount))}
+        {row(
+          "Payment Status",
+          <span
+            className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold uppercase border ${
+              isPaid
+                ? "bg-lime-50 text-lime-700 border-lime-200"
+                : "bg-orange-50 text-orange-700 border-orange-200"
+            }`}
+          >
+            {paymentStatusRaw}
+          </span>
+        )}
+        {row("Amount", <span className="font-mono font-bold text-lime-700">{formatCurrencyINR(booking.totalAmount)}</span>)}
         {row("Currency", booking.currency, true)}
         {row("Razorpay Order ID", razorpayOrderId ? String(razorpayOrderId) : null, true)}
         {row("Razorpay Payment ID", razorpayPaymentId ? String(razorpayPaymentId) : null, true)}
         {row("Transaction ID", transactionId ? String(transactionId) : null, true)}
         {row(
-          "Paid at",
+          "Paid At",
           paidAt
             ? formatOperationalDateTime(String(paidAt))
             : isPaid
               ? formatOperationalDateTime(booking.createdAt)
               : null
         )}
-        {row("Payment channel", String(channel))}
+        {row("Payment Channel", String(channel))}
         <button
           type="button"
           onClick={onOpenSync}
           disabled={isSyncing}
-          className="mt-3 w-full rounded-md border border-aviation-800 px-3 py-2 text-[12px] text-slate-200 hover:bg-aviation-850 disabled:opacity-50"
+          className="mt-3 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 disabled:opacity-50 transition-all"
         >
           {isSyncing ? "Reconciling…" : "Reconcile with Razorpay"}
         </button>

@@ -33,30 +33,30 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
   const endRecord = Math.min(currentPage * pageSize, totalItems);
 
   return (
-    <div className="border border-aviation-800 rounded-md overflow-hidden bg-aviation-900">
+    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] text-left text-[12px]">
-          <thead className="sticky top-0 bg-aviation-900 border-b border-aviation-800 text-[10px] uppercase tracking-wider text-slate-500">
+        <table className="w-full min-w-[980px] text-left text-xs">
+          <thead className="sticky top-0 bg-slate-50/90 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             <tr>
-              <th className="px-3 py-2 font-medium">Booking</th>
-              <th className="px-3 py-2 font-medium">Passenger</th>
-              <th className="px-3 py-2 font-medium">Flight</th>
-              <th className="px-3 py-2 font-medium">Route</th>
-              <th className="px-3 py-2 font-medium">Travel date</th>
-              <th className="px-3 py-2 font-medium">Service</th>
-              <th className="px-3 py-2 font-medium">Amount</th>
-              <th className="px-3 py-2 font-medium">Payment</th>
-              <th className="px-3 py-2 font-medium">Status</th>
-              <th className="px-3 py-2 font-medium">Created</th>
-              {canRecycle ? <th className="px-3 py-2 font-medium text-right"> </th> : null}
+              <th className="px-4 py-3 font-semibold">Booking</th>
+              <th className="px-4 py-3 font-semibold">Passenger</th>
+              <th className="px-4 py-3 font-semibold">Flight</th>
+              <th className="px-4 py-3 font-semibold">Route</th>
+              <th className="px-4 py-3 font-semibold">Travel date</th>
+              <th className="px-4 py-3 font-semibold">Service</th>
+              <th className="px-4 py-3 font-semibold">Amount</th>
+              <th className="px-4 py-3 font-semibold">Payment</th>
+              <th className="px-4 py-3 font-semibold">Status</th>
+              <th className="px-4 py-3 font-semibold">Created</th>
+              {canRecycle ? <th className="px-3 py-3 font-semibold text-right"> </th> : null}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100">
             {isLoading && bookings.length === 0 ? (
               [1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <tr key={i} className="border-b border-aviation-800">
-                  <td colSpan={canRecycle ? 11 : 10} className="px-3 py-2">
-                    <div className="h-6 bg-aviation-850 animate-pulse rounded" />
+                <tr key={i}>
+                  <td colSpan={canRecycle ? 11 : 10} className="px-4 py-3">
+                    <div className="h-6 bg-slate-100 animate-pulse rounded-md" />
                   </td>
                 </tr>
               ))
@@ -71,31 +71,41 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                 <tr
                   key={booking.id}
                   onClick={() => navigate(`/bookings/${booking.bookingRef}`)}
-                  className="border-b border-aviation-800/70 hover:bg-aviation-850 cursor-pointer"
+                  className="hover:bg-lime-50/30 cursor-pointer transition-colors group"
                 >
-                  <td className="px-3 py-2 font-mono text-slate-200">{booking.bookingRef}</td>
-                  <td className="px-3 py-2">
-                    <div className="text-white">{booking.passengerName}</div>
+                  <td className="px-4 py-3 font-mono text-xs font-semibold text-slate-800 group-hover:text-lime-700 transition-colors">
+                    {booking.bookingRef}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-slate-900">{booking.passengerName}</div>
                     <div className="text-[11px] text-slate-500">{booking.passengerEmail}</div>
                   </td>
-                  <td className="px-3 py-2 font-mono">{booking.flightNum || "—"}</td>
-                  <td className="px-3 py-2 font-mono">
+                  <td className="px-4 py-3 font-mono text-slate-700 font-medium">{booking.flightNum || "—"}</td>
+                  <td className="px-4 py-3 font-mono text-slate-700">
                     {booking.originCode || "—"} → {booking.destCode || "—"}
                   </td>
-                  <td className="px-3 py-2 text-slate-400">
+                  <td className="px-4 py-3 text-slate-600">
                     {formatOperationalDateTime(booking.departureTime || booking.createdAt)}
                   </td>
-                  <td className="px-3 py-2">{booking.metadataJson?.package || booking.serviceType || "—"}</td>
-                  <td className="px-3 py-2 tabular-nums">{formatCurrencyINR(booking.totalAmount)}</td>
-                  <td className="px-3 py-2 text-slate-400">
-                    {(booking.metadataJson?.payment_status || "—").toString()}
+                  <td className="px-4 py-3 text-slate-700 font-medium">
+                    {booking.metadataJson?.package || booking.serviceType || "—"}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3 tabular-nums font-semibold text-slate-900">
+                    {formatCurrencyINR(booking.totalAmount)}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">
+                    <span className="inline-block px-1.5 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700">
+                      {(booking.metadataJson?.payment_status || "—").toString()}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
                     <BookingStatusBadge status={booking.status} />
                   </td>
-                  <td className="px-3 py-2 text-slate-500">{formatOperationalDateTime(booking.createdAt)}</td>
+                  <td className="px-4 py-3 text-slate-500 text-[11px]">
+                    {formatOperationalDateTime(booking.createdAt)}
+                  </td>
                   {canRecycle ? (
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-3 py-3 text-right">
                       <button
                         type="button"
                         title="Move to bin"
@@ -104,9 +114,9 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                           e.stopPropagation();
                           onRecycle?.(booking);
                         }}
-                        className="inline-flex rounded p-1.5 text-slate-500 hover:bg-rose-950/40 hover:text-rose-300"
+                        className="inline-flex rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </td>
                   ) : null}
@@ -117,7 +127,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
         </table>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 py-2.5 border-t border-aviation-800 text-[12px] text-slate-500">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-slate-200 bg-slate-50/60 text-xs text-slate-600 font-medium">
         <div>
           {totalItems > 0
             ? `Showing ${startRecord}–${endRecord} of ${totalItems.toLocaleString()}`
@@ -129,7 +139,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
               type="button"
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage <= 1 || isLoading}
-              className="p-1.5 rounded text-slate-400 hover:bg-aviation-800 disabled:opacity-30"
+              className="p-1.5 rounded-lg text-slate-500 hover:bg-white hover:text-slate-800 border border-transparent hover:border-slate-200 disabled:opacity-30 transition-all"
               aria-label="Previous page"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -146,10 +156,10 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                   type="button"
                   onClick={() => onPageChange(pageNum)}
                   disabled={isLoading}
-                  className={`min-w-[28px] h-7 rounded text-[12px] ${
+                  className={`min-w-[30px] h-7 rounded-lg text-xs font-semibold transition-all ${
                     pageNum === currentPage
-                      ? "bg-aviation-800 text-white"
-                      : "text-slate-400 hover:bg-aviation-850"
+                      ? "bg-lime-600 text-white shadow-xs"
+                      : "text-slate-600 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-200"
                   }`}
                 >
                   {pageNum}
@@ -160,7 +170,7 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
               type="button"
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage >= totalPages || isLoading}
-              className="p-1.5 rounded text-slate-400 hover:bg-aviation-800 disabled:opacity-30"
+              className="p-1.5 rounded-lg text-slate-500 hover:bg-white hover:text-slate-800 border border-transparent hover:border-slate-200 disabled:opacity-30 transition-all"
               aria-label="Next page"
             >
               <ChevronRight className="h-4 w-4" />

@@ -21,7 +21,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-aviation-950 disabled:opacity-50 disabled:cursor-not-allowed select-none";
+    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed select-none";
 
   const sizeStyles = {
     sm: "text-xs px-3 py-1.5 gap-1.5",
@@ -31,15 +31,15 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary:
-      "bg-aviation-gold text-aviation-950 hover:bg-amber-400 focus:ring-aviation-gold active:bg-amber-500 font-semibold shadow-sm shadow-aviation-gold/20",
+      "bg-lime-600 text-white hover:bg-lime-700 active:bg-lime-800 font-semibold shadow-xs focus:ring-lime-500",
     secondary:
-      "bg-aviation-800 text-slate-200 hover:bg-aviation-700 hover:text-white border border-aviation-700/60 focus:ring-aviation-600",
+      "bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-slate-200 shadow-xs focus:ring-slate-300",
     outline:
-      "bg-transparent text-slate-300 hover:text-white border border-aviation-700 hover:border-slate-500 focus:ring-slate-500",
+      "bg-transparent text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-slate-200 focus:ring-slate-300",
     danger:
-      "bg-red-600 text-white hover:bg-red-500 focus:ring-red-500 active:bg-red-700 shadow-sm shadow-red-600/20",
+      "bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500 active:bg-rose-800 shadow-xs",
     ghost:
-      "bg-transparent text-slate-400 hover:text-slate-100 hover:bg-aviation-850 focus:ring-aviation-700",
+      "bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:ring-slate-300",
   };
 
   return (

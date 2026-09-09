@@ -77,7 +77,7 @@ export const CharterFilters: React.FC<CharterFiltersProps> = ({
   };
 
   return (
-    <div className="bg-aviation-900 border border-aviation-800 rounded-xl p-4 space-y-3">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-xs">
       <div className="flex flex-col md:flex-row gap-3">
         {/* Search Input */}
         <div className="relative flex-1">
@@ -87,12 +87,12 @@ export const CharterFilters: React.FC<CharterFiltersProps> = ({
             value={localSearch}
             onChange={handleInputChange}
             placeholder="Search by reference (SC-XXXX), customer, company, phone, route..."
-            className="w-full bg-aviation-850 border border-aviation-700/60 rounded-lg pl-10 pr-9 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-aviation-gold focus:ring-1 focus:ring-aviation-gold transition-colors font-mono"
+            className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-9 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-lime-500 focus:ring-2 focus:ring-lime-500/20 transition-all font-mono shadow-xs"
           />
           {localSearch && (
             <button
               onClick={handleClearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
               aria-label="Clear search"
             >
               <X className="h-3.5 w-3.5" />
@@ -102,11 +102,11 @@ export const CharterFilters: React.FC<CharterFiltersProps> = ({
 
         {/* Status Dropdown */}
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-slate-500 hidden sm:block" />
+          <Filter className="h-4 w-4 text-slate-400 hidden sm:block" />
           <select
             value={status}
             onChange={(e) => onStatusChange(e.target.value)}
-            className="bg-aviation-850 border border-aviation-700/60 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-aviation-gold transition-colors cursor-pointer"
+            className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 focus:outline-none focus:border-lime-500 shadow-xs transition-colors cursor-pointer"
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -119,7 +119,7 @@ export const CharterFilters: React.FC<CharterFiltersProps> = ({
           <select
             value={priority}
             onChange={(e) => onPriorityChange(e.target.value as CharterPriority | "ALL")}
-            className="bg-aviation-850 border border-aviation-700/60 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-aviation-gold transition-colors cursor-pointer"
+            className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 focus:outline-none focus:border-lime-500 shadow-xs transition-colors cursor-pointer"
           >
             {PRIORITY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -131,9 +131,9 @@ export const CharterFilters: React.FC<CharterFiltersProps> = ({
       </div>
 
       {/* Counter indicator */}
-      <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-1 border-t border-aviation-800/60">
+      <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 pt-2 border-t border-slate-100">
         <span>
-          Showing <strong className="text-white">{totalCount}</strong> charter enquiries
+          Showing <strong className="text-slate-900 font-semibold">{totalCount}</strong> charter enquiries
         </span>
         {(status !== "ALL" || priority !== "ALL" || search) && (
           <button
@@ -142,7 +142,7 @@ export const CharterFilters: React.FC<CharterFiltersProps> = ({
               onStatusChange("ALL");
               onPriorityChange("ALL");
             }}
-            className="text-aviation-gold hover:underline text-[11px]"
+            className="text-orange-600 hover:text-orange-800 font-semibold text-xs transition-colors"
           >
             Reset Filters
           </button>

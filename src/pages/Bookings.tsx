@@ -125,7 +125,7 @@ export const Bookings: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 pb-8">
+    <div className="space-y-5 pb-8">
       <BookingsFilters
         filters={filters}
         onFiltersChange={setFilters}
@@ -135,15 +135,15 @@ export const Bookings: React.FC = () => {
       />
 
       {error && (
-        <div className="border border-rose-900/60 bg-rose-950/30 rounded-md p-4 flex items-start gap-3">
-          <AlertTriangle className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
+        <div className="border border-rose-200 bg-rose-50 rounded-xl p-4 flex items-start gap-3 shadow-xs">
+          <AlertTriangle className="h-5 w-5 text-rose-600 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="text-[13px] text-rose-200">{error}</p>
+            <p className="text-xs font-semibold text-rose-800">{error}</p>
           </div>
           <button
             type="button"
             onClick={() => loadBookings(currentPage, filters, debouncedSearch)}
-            className="inline-flex items-center gap-1.5 text-[12px] text-rose-200 hover:text-white"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-700 hover:text-rose-900"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Retry
@@ -152,7 +152,7 @@ export const Bookings: React.FC = () => {
       )}
 
       {recycleError && (
-        <div className="border border-rose-900/60 bg-rose-950/30 rounded-md p-3 text-[12px] text-rose-200">
+        <div className="border border-rose-200 bg-rose-50 rounded-xl p-3 text-xs font-medium text-rose-800 shadow-xs">
           {recycleError}
         </div>
       )}

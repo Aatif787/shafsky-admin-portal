@@ -33,74 +33,74 @@ export const CharterStatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 
     switch (norm) {
       case "REQUESTED":
         return {
-          bg: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-          icon: <Sparkles className="h-3 w-3 text-amber-400" />,
+          bg: "bg-orange-50 text-orange-800 border-orange-200",
+          icon: <Sparkles className="h-3 w-3 text-orange-600" />,
           label: "NEW REQUEST",
         };
       case "CONTACTED":
         return {
-          bg: "bg-sky-500/10 text-sky-300 border-sky-500/30",
-          icon: <PhoneCall className="h-3 w-3 text-sky-400" />,
+          bg: "bg-sky-50 text-sky-800 border-sky-200",
+          icon: <PhoneCall className="h-3 w-3 text-sky-600" />,
           label: "CONTACTED",
         };
       case "UNDER_REVIEW":
         return {
-          bg: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30",
-          icon: <Search className="h-3 w-3 text-indigo-400" />,
+          bg: "bg-indigo-50 text-indigo-800 border-indigo-200",
+          icon: <Search className="h-3 w-3 text-indigo-600" />,
           label: "UNDER REVIEW",
         };
       case "AIRCRAFT_SEARCH":
         return {
-          bg: "bg-blue-500/10 text-blue-300 border-blue-500/30",
-          icon: <Search className="h-3 w-3 text-blue-400" />,
+          bg: "bg-blue-50 text-blue-800 border-blue-200",
+          icon: <Search className="h-3 w-3 text-blue-600" />,
           label: "AIRCRAFT SEARCH",
         };
       case "OPTIONS_PREPARED":
         return {
-          bg: "bg-violet-500/10 text-violet-300 border-violet-500/30",
-          icon: <FileCheck className="h-3 w-3 text-violet-400" />,
+          bg: "bg-violet-50 text-violet-800 border-violet-200",
+          icon: <FileCheck className="h-3 w-3 text-violet-600" />,
           label: "OPTIONS READY",
         };
       case "QUOTE_PREPARED":
         return {
-          bg: "bg-purple-500/10 text-purple-300 border-purple-500/30",
-          icon: <FileCheck className="h-3 w-3 text-purple-400" />,
+          bg: "bg-purple-50 text-purple-800 border-purple-200",
+          icon: <FileCheck className="h-3 w-3 text-purple-600" />,
           label: "QUOTE PREPARED",
         };
       case "QUOTE_SENT":
         return {
-          bg: "bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/30",
-          icon: <Send className="h-3 w-3 text-fuchsia-400" />,
+          bg: "bg-fuchsia-50 text-fuchsia-800 border-fuchsia-200",
+          icon: <Send className="h-3 w-3 text-fuchsia-600" />,
           label: "QUOTE SENT",
         };
       case "CUSTOMER_REVIEW":
         return {
-          bg: "bg-teal-500/10 text-teal-300 border-teal-500/30",
-          icon: <UserCheck className="h-3 w-3 text-teal-400" />,
+          bg: "bg-teal-50 text-teal-800 border-teal-200",
+          icon: <UserCheck className="h-3 w-3 text-teal-600" />,
           label: "CUSTOMER REVIEW",
         };
       case "CONFIRMED":
         return {
-          bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-          icon: <CheckCircle2 className="h-3 w-3 text-emerald-400" />,
+          bg: "bg-lime-50 text-lime-800 border-lime-200",
+          icon: <CheckCircle2 className="h-3 w-3 text-lime-600" />,
           label: "CONFIRMED",
         };
       case "CLOSED":
         return {
-          bg: "bg-slate-800 text-slate-400 border-slate-700",
+          bg: "bg-slate-100 text-slate-600 border-slate-200",
           icon: <Archive className="h-3 w-3 text-slate-500" />,
           label: "CLOSED",
         };
       case "CANCELLED":
         return {
-          bg: "bg-red-500/10 text-red-400 border-red-500/30",
-          icon: <XCircle className="h-3 w-3 text-red-400" />,
+          bg: "bg-rose-50 text-rose-700 border-rose-200",
+          icon: <XCircle className="h-3 w-3 text-rose-600" />,
           label: "CANCELLED",
         };
       default:
         return {
-          bg: "bg-slate-800 text-slate-300 border-slate-700",
-          icon: <Check className="h-3 w-3" />,
+          bg: "bg-slate-100 text-slate-700 border-slate-200",
+          icon: <Check className="h-3 w-3 text-slate-600" />,
           label: norm,
         };
     }
@@ -111,7 +111,7 @@ export const CharterStatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 
 
   return (
     <span
-      className={`inline-flex items-center rounded-full font-mono font-medium border ${style.bg} ${sizeClasses}`}
+      className={`inline-flex items-center rounded-full font-mono font-medium border select-none ${style.bg} ${sizeClasses}`}
     >
       {style.icon}
       <span>{style.label}</span>
@@ -129,26 +129,26 @@ export const CharterPriorityBadge: React.FC<PriorityBadgeProps> = ({ priority, s
     switch (priority) {
       case "URGENT":
         return {
-          bg: "bg-red-500/10 text-red-400 border-red-500/30",
-          icon: <Flame className="h-3 w-3 text-red-400 animate-pulse" />,
+          bg: "bg-rose-50 text-rose-700 border-rose-200",
+          icon: <Flame className="h-3 w-3 text-rose-600" />,
           label: "URGENT",
         };
       case "HIGH":
         return {
-          bg: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-          icon: <AlertTriangle className="h-3 w-3 text-amber-400" />,
+          bg: "bg-orange-50 text-orange-800 border-orange-200",
+          icon: <AlertTriangle className="h-3 w-3 text-orange-600" />,
           label: "HIGH",
         };
       case "MEDIUM":
         return {
-          bg: "bg-sky-500/10 text-sky-300 border-sky-500/30",
-          icon: <Clock className="h-3 w-3 text-sky-400" />,
+          bg: "bg-sky-50 text-sky-800 border-sky-200",
+          icon: <Clock className="h-3 w-3 text-sky-600" />,
           label: "MEDIUM",
         };
       case "STANDARD":
       default:
         return {
-          bg: "bg-slate-800 text-slate-400 border-slate-700",
+          bg: "bg-slate-100 text-slate-600 border-slate-200",
           icon: null,
           label: "STANDARD",
         };
@@ -160,7 +160,7 @@ export const CharterPriorityBadge: React.FC<PriorityBadgeProps> = ({ priority, s
 
   return (
     <span
-      className={`inline-flex items-center rounded font-mono font-semibold border ${style.bg} ${sizeClasses}`}
+      className={`inline-flex items-center rounded font-mono font-semibold border select-none ${style.bg} ${sizeClasses}`}
     >
       {style.icon}
       <span>{style.label}</span>
