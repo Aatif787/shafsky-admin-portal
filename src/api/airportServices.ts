@@ -19,6 +19,9 @@ export interface AirportServiceItem {
   short_description: string;
   min_booking_notice_hours: number;
   updated_at: string | null;
+  deleted_at?: string | null;
+  deleted_by_email?: string | null;
+  deleted_by_role?: string | null;
 }
 
 export interface ListAirportServicesParams {
@@ -39,6 +42,16 @@ export async function fetchAirportServices(params: ListAirportServicesParams = {
   return apiFetch<AirportServiceItem[]>(path, { method: "GET" });
 }
 
+export async function fetchRecycledAirportServices(params: { airport?: string; limit?: number; offset?: number } = {}) {
+  const query = new URLSearchParams();
+  if (params.airport) query.set("airport", params.airport);
+  if (params.limit !== undefined) query.set("limit", String(params.limit));
+  if (params.offset !== undefined) query.set("offset", String(params.offset));
+
+  const path = `/api/admin/airport-services/recycle-bin${query.toString() ? `?${query.toString()}` : ""}`;
+  return apiFetch<AirportServiceItem[]>(path, { method: "GET" });
+}
+
 export async function updateAirportServicePrice(
   id: string,
   payload: {
@@ -54,5 +67,23 @@ export async function updateAirportServicePrice(
   return apiFetch<AirportServiceItem>(`/api/admin/airport-services/${id}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
+  });
+}
+
+export async function recycleAirportService(id: string) {
+  return apiFetch<{ recycled: boolean; mapping_id: string }>(`/api/admin/airport-services/${id}/recycle`, {
+    method: "POST",
+  });
+}
+
+export async function restoreAirportService(id: string) {
+  return apiFetch<{ restored: boolean; mapping_id: string }>(`/api/admin/airport-services/${id}/restore`, {
+    method: "POST",
+  });
+}
+
+export async function purgeAirportService(id: string) {
+  return apiFetch<{ purged: boolean; mapping_id: string }>(`/api/admin/airport-services/${id}/purge`, {
+    method: "DELETE",
   });
 }

@@ -70,14 +70,14 @@ export const Login: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
-                label="Email address"
-                type="email"
-                placeholder="name@company.com"
+                label="Email address or Admin ID"
+                type="text"
+                placeholder="name@company.com or Admin ID"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isSubmitting}
                 leftIcon={<Mail className="h-4 w-4 text-slate-400" />}
-                autoComplete="email"
+                autoComplete="username"
                 autoFocus
                 required
               />

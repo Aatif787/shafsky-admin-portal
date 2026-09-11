@@ -24,7 +24,7 @@ export async function loginApi(email: string, password: string): Promise<LoginRe
       },
       credentials: "include",
       body: JSON.stringify({
-        email: email.trim().toLowerCase(),
+        email: email.trim(),
         password,
       }),
     });
