@@ -18,7 +18,12 @@ import { NotFound } from "./pages/NotFound";
 
 export const App: React.FC = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
