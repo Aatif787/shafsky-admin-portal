@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { AuditLogRecord } from "../../types/dashboard";
 import { formatOperationalDateTime } from "../../lib/dateUtils";
+import { useAuth } from "../../auth/useAuth";
 
 interface RecentActivityProps {
   logs: AuditLogRecord[];
@@ -8,6 +9,16 @@ interface RecentActivityProps {
 }
 
 export const RecentActivity: React.FC<RecentActivityProps> = ({ logs, isLoading }) => {
+  const { role } = useAuth();
+
+  // Non–SUPER_ADMIN staff must not see break-glass SUPER_ADMIN activity.
+  const visibleLogs = useMemo(() => {
+    if ((role || "").toUpperCase() === "SUPER_ADMIN") return logs;
+    return logs.filter(
+      (log) => (log.actorRole || "").toUpperCase() !== "SUPER_ADMIN"
+    );
+  }, [logs, role]);
+
   return (
     <section className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
       <div className="px-4 py-3 border-b border-slate-200 bg-slate-50/50">
@@ -19,11 +30,11 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({ logs, isLoading 
             <div key={i} className="h-8 bg-slate-100 animate-pulse rounded-md" />
           ))}
         </div>
-      ) : logs.length === 0 ? (
+      ) : visibleLogs.length === 0 ? (
         <div className="px-4 py-8 text-center text-xs text-slate-500 font-medium">No recent audit events.</div>
       ) : (
         <div className="divide-y divide-slate-100">
-          {logs.map((log) => (
+          {visibleLogs.map((log) => (
             <div key={log.id} className="px-4 py-3 flex items-start justify-between gap-3 text-xs hover:bg-slate-50/60 transition-colors">
               <div className="min-w-0">
                 <div className="font-semibold text-slate-900">{(log.action || "SYSTEM_EVENT").replace(/_/g, " ")}</div>

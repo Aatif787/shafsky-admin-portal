@@ -50,6 +50,7 @@ export interface BookingRecord {
 export interface AuditLogRecord {
   id: string;
   actorEmail: string;
+  actorRole?: string | null;
   action: string;
   resourceType: string;
   resourceId?: string | null;
