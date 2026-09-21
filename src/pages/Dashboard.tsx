@@ -31,8 +31,9 @@ export const Dashboard: React.FC = () => {
   const [binNotice, setBinNotice] = useState<string | null>(null);
   const [binError, setBinError] = useState<string | null>(null);
   const [recycleTarget, setRecycleTarget] = useState<BookingRecord | null>(null);
-  const [purgeTarget, setPurgeTarget] = useState<BookingRecord | null>(null);
+  const [purgeTargets, setPurgeTargets] = useState<BookingRecord[]>([]);
   const [recycleLoading, setRecycleLoading] = useState(false);
+  const [bulkPurging, setBulkPurging] = useState(false);
 
   const loadBin = useCallback(async () => {
     if (!canManageBin) return;
@@ -116,18 +117,34 @@ export const Dashboard: React.FC = () => {
   };
 
   const handlePurge = async () => {
-    if (!purgeTarget) return;
-    setBinBusyRef(purgeTarget.bookingRef);
+    if (purgeTargets.length === 0) return;
+    setBulkPurging(true);
     setBinNotice(null);
     setBinError(null);
-    const res = await purgeBooking(purgeTarget.bookingRef);
-    setBinBusyRef(null);
-    if (res.error) {
-      setBinError(res.error);
-      return;
+    const refs = purgeTargets.map((b) => b.bookingRef);
+    setBinBusyRef(refs[0] || null);
+    const failures: string[] = [];
+    for (const booking of purgeTargets) {
+      setBinBusyRef(booking.bookingRef);
+      const res = await purgeBooking(booking.bookingRef);
+      if (res.error) failures.push(`${booking.bookingRef}: ${res.error}`);
     }
-    setBinNotice(`${purgeTarget.bookingRef} was permanently deleted.`);
-    setPurgeTarget(null);
+    setBinBusyRef(null);
+    setBulkPurging(false);
+    setPurgeTargets([]);
+    if (failures.length > 0) {
+      setBinError(
+        failures.length === refs.length
+          ? failures[0]
+          : `Deleted ${refs.length - failures.length} of ${refs.length}. ${failures[0]}`
+      );
+    } else {
+      setBinNotice(
+        refs.length === 1
+          ? `${refs[0]} was permanently deleted.`
+          : `${refs.length} bookings were permanently deleted.`
+      );
+    }
     await Promise.all([loadData(true), loadBin()]);
   };
 
@@ -210,8 +227,10 @@ export const Dashboard: React.FC = () => {
           isLoading={binLoading}
           isSuperAdmin={isSuperAdmin}
           busyRef={binBusyRef}
+          bulkBusy={bulkPurging}
           onRestore={handleRestore}
-          onPurge={(booking) => setPurgeTarget(booking)}
+          onPurge={(booking) => setPurgeTargets([booking])}
+          onPurgeSelected={(bookings) => setPurgeTargets(bookings)}
         />
       )}
 
@@ -226,13 +245,14 @@ export const Dashboard: React.FC = () => {
           isLoading={recycleLoading}
         />
       )}
-      {purgeTarget && (
+      {purgeTargets.length > 0 && (
         <PurgeBookingModal
-          isOpen={Boolean(purgeTarget)}
-          onClose={() => setPurgeTarget(null)}
+          isOpen={purgeTargets.length > 0}
+          onClose={() => !bulkPurging && setPurgeTargets([])}
           onConfirm={handlePurge}
-          booking={purgeTarget}
-          isLoading={binBusyRef === purgeTarget.bookingRef}
+          booking={purgeTargets[0]}
+          bulkCount={purgeTargets.length}
+          isLoading={bulkPurging}
         />
       )}
     </div>

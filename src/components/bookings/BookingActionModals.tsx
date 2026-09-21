@@ -368,6 +368,8 @@ interface PurgeBookingModalProps {
   onConfirm: () => void;
   booking: BookingRecord;
   isLoading: boolean;
+  /** When > 1, confirm permanent delete for multiple selected bookings. */
+  bulkCount?: number;
 }
 
 export const PurgeBookingModal: React.FC<PurgeBookingModalProps> = ({
@@ -376,14 +378,28 @@ export const PurgeBookingModal: React.FC<PurgeBookingModalProps> = ({
   onConfirm,
   booking,
   isLoading,
+  bulkCount = 1,
 }) => (
-  <ModalContainer isOpen={isOpen} onClose={onClose} title="Permanently Delete Booking">
+  <ModalContainer
+    isOpen={isOpen}
+    onClose={onClose}
+    title={bulkCount > 1 ? "Permanently Delete Bookings" : "Permanently Delete Booking"}
+  >
     <div className="space-y-4">
       <div className="flex items-start gap-3 bg-rose-50 border border-rose-200 rounded-xl p-3.5">
         <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
         <div className="text-xs text-rose-900 leading-relaxed font-medium">
-          This removes <strong className="text-slate-900 font-mono font-bold">{booking.bookingRef}</strong> from the
-          database, including related payments and notifications. This cannot be undone.
+          {bulkCount > 1 ? (
+            <>
+              This permanently removes <strong className="text-slate-900 font-bold">{bulkCount} selected bookings</strong>{" "}
+              from the database, including related payments and notifications. This cannot be undone.
+            </>
+          ) : (
+            <>
+              This removes <strong className="text-slate-900 font-mono font-bold">{booking.bookingRef}</strong> from the
+              database, including related payments and notifications. This cannot be undone.
+            </>
+          )}
         </div>
       </div>
       <div className="flex items-center justify-end gap-2.5 pt-2">
@@ -402,7 +418,7 @@ export const PurgeBookingModal: React.FC<PurgeBookingModalProps> = ({
           className="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
         >
           {isLoading && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
-          Delete Forever
+          {bulkCount > 1 ? `Delete ${bulkCount} Forever` : "Delete Forever"}
         </button>
       </div>
     </div>
