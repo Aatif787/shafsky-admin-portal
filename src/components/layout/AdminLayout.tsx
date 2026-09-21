@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
-import { buildApiUrl } from "../../api/config";
+import { buildApiUrl, isNgrokBackend } from "../../api/config";
 
 export const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -12,9 +12,11 @@ export const AdminLayout: React.FC = () => {
     let cancelled = false;
     const ping = async () => {
       try {
-        const res = await fetch(buildApiUrl("/api/health"), {
-          headers: { "ngrok-skip-browser-warning": "true" },
-        });
+        const headers: Record<string, string> = {};
+        if (isNgrokBackend()) {
+          headers["ngrok-skip-browser-warning"] = "true";
+        }
+        const res = await fetch(buildApiUrl("/api/health"), { headers });
         if (!cancelled) setBackendLive(res.ok);
       } catch {
         if (!cancelled) setBackendLive(false);
