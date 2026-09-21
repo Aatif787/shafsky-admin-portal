@@ -1,5 +1,5 @@
 import { apiFetch, executeSingleFlightRefresh } from "./client";
-import { buildApiUrl } from "./config";
+import { buildApiUrl, isNgrokBackend } from "./config";
 import { setAccessToken, clearAccessToken } from "../auth/tokenStore";
 import type { ApiResponse, AuthResponseData, AuthUser } from "../types/auth";
 
@@ -16,12 +16,15 @@ export interface LoginResult {
 export async function loginApi(email: string, password: string): Promise<LoginResult> {
   try {
     const url = buildApiUrl("/api/auth/login");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (isNgrokBackend()) {
+      headers["ngrok-skip-browser-warning"] = "true";
+    }
     const res = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true",
-      },
+      headers,
       credentials: "include",
       body: JSON.stringify({
         email: email.trim(),

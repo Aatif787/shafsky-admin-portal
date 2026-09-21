@@ -10,17 +10,6 @@ interface BookingsFiltersProps {
   onRefresh: () => void;
 }
 
-const STATUS_OPTIONS: { value: BookingStatusType | "ALL"; label: string }[] = [
-  { value: "ALL", label: "All statuses" },
-  { value: "PENDING", label: "Pending" },
-  { value: "CONFIRMED", label: "Confirmed" },
-  { value: "ASSIGNED", label: "Assigned" },
-  { value: "IN_PROGRESS", label: "In progress" },
-  { value: "COMPLETED", label: "Completed" },
-  { value: "CANCELLED", label: "Cancelled" },
-  { value: "REJECTED", label: "Rejected" },
-];
-
 const CATEGORY_OPTIONS = [
   { value: "ALL", label: "All services" },
   { value: "Airport Assistance", label: "Airport Assistance" },
@@ -29,7 +18,18 @@ const CATEGORY_OPTIONS = [
   { value: "Medical Assistance", label: "Medical Assistance" },
   { value: "Cargo & Logistics", label: "Cargo & Logistics" },
   { value: "Private Charter", label: "Private Charter (bookings)" },
-  { value: "Meet & Greet", label: "Meet & Greet" },
+];
+
+const STATUS_OPTIONS: { value: BookingStatusType | "ALL"; label: string }[] = [
+  { value: "ALL", label: "All statuses" },
+  { value: "DRAFT", label: "Draft" },
+  { value: "PENDING", label: "Pending" },
+  { value: "CONFIRMED", label: "Confirmed" },
+  { value: "ASSIGNED", label: "Assigned" },
+  { value: "IN_PROGRESS", label: "In progress" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "CANCELLED", label: "Cancelled" },
+  { value: "REJECTED", label: "Rejected" },
 ];
 
 const EMPTY_FILTERS: BookingListFilters = {

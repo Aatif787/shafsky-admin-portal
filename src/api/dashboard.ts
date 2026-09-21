@@ -85,6 +85,7 @@ export async function fetchDashboardData(): Promise<{ data: DashboardData | null
           ? charterRes.data
           : [];
 
+    const todayStr = new Date().toISOString().split("T")[0];
     const charterMetrics: CharterDeskMetrics = {
       newEnquiries: charterList.filter((r) => (r.status || "").toUpperCase() === "REQUESTED").length,
       awaitingQuote: charterList.filter((r) =>
@@ -92,7 +93,11 @@ export async function fetchDashboardData(): Promise<{ data: DashboardData | null
           (r.status || "").toUpperCase()
         )
       ).length,
-      confirmedToday: charterList.filter((r) => (r.status || "").toUpperCase() === "CONFIRMED").length,
+      confirmedToday: charterList.filter((r) => {
+        if ((r.status || "").toUpperCase() !== "CONFIRMED") return false;
+        const day = String(r.updated_at || r.created_at || "").slice(0, 10);
+        return day === todayStr;
+      }).length,
       totalActive: charterList.filter(
         (r) => !["CLOSED", "CANCELLED"].includes((r.status || "").toUpperCase())
       ).length,

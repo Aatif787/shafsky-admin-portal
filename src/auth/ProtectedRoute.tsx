@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./useAuth";
 import { AccessDenied } from "../pages/AccessDenied";
+import { STAFF_OR_ADMIN_ROLES } from "./roles";
 import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
@@ -11,7 +12,7 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
-  allowedRoles = ["SUPER_ADMIN", "ADMIN", "OPERATIONS_MANAGER", "DUTY_OFFICER", "DISPATCHER"],
+  allowedRoles = [...STAFF_OR_ADMIN_ROLES],
 }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
@@ -25,7 +26,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             <Loader2 className="absolute h-5 w-5 text-aviation-gold animate-pulse" />
           </div>
           <div className="text-center">
-            <p className="text-xs font-mono tracking-widest text-aviation-gold/80 uppercase">Shafsky Operations</p>
+            <p className="text-xs font-mono tracking-widest text-aviation-gold/80 uppercase">
+              Shafsky Operations
+            </p>
             <p className="text-sm text-slate-400">Verifying secure session...</p>
           </div>
         </div>
@@ -37,9 +40,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check role authorization
   const currentRole = (user.role || "").toUpperCase();
-  const isAuthorized = allowedRoles.includes(currentRole);
+  const isAuthorized = allowedRoles.map((r) => r.toUpperCase()).includes(currentRole);
 
   if (!isAuthorized) {
     return <AccessDenied />;

@@ -13,6 +13,7 @@ const SECTION_TITLES: Record<string, string> = {
   "/bookings": "Bookings",
   "/charter": "Charter Desk",
   "/operations": "Operations",
+  "/pricing": "Services & Pricing",
   "/payments": "Payments",
   "/team": "Team & Roles",
 };
@@ -59,7 +60,11 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       </form>
 
       <div className="flex items-center gap-3">
-        <span className="hidden sm:inline-flex text-slate-400 hover:text-slate-600 cursor-pointer" title="Notifications">
+        <span
+          className="hidden sm:inline-flex text-slate-300 cursor-default"
+          title="In-app notifications coming in a later release"
+          aria-hidden="true"
+        >
           <Bell className="h-4 w-4" />
         </span>
         <div className="hidden sm:block text-right">

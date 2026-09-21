@@ -77,7 +77,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string; role?: string }> => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     const result = await loginApi(email, password);
 
@@ -93,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading: false,
         error: null,
       });
-      return { success: true };
+      return { success: true, role: user.role };
     } else {
       const errorMsg = result.error || "Invalid email or password.";
       setState((prev) => ({

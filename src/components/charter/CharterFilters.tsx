@@ -24,6 +24,7 @@ const STATUS_OPTIONS = [
   { value: "UNDER_REVIEW", label: "Under Review" },
   { value: "AIRCRAFT_SEARCH", label: "Aircraft Search" },
   { value: "OPTIONS_PREPARED", label: "Options Prepared" },
+  { value: "QUOTE_PREPARED", label: "Quote Prepared" },
   { value: "QUOTE_SENT", label: "Quote Sent" },
   { value: "CUSTOMER_REVIEW", label: "Customer Review" },
   { value: "CONFIRMED", label: "Confirmed" },

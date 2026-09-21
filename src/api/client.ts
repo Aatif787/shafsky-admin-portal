@@ -9,7 +9,7 @@
  * 5. Clean session termination when refresh fails.
  */
 
-import { buildApiUrl } from "./config";
+import { buildApiUrl, isNgrokBackend } from "./config";
 import { getAccessToken, setAccessToken, clearAccessToken } from "../auth/tokenStore";
 import type { ApiResponse, AuthResponseData } from "../types/auth";
 
@@ -33,13 +33,18 @@ export async function executeSingleFlightRefresh(): Promise<string | null> {
   activeRefreshPromise = (async () => {
     try {
       const refreshUrl = buildApiUrl("/api/auth/refresh");
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      // Only for ngrok free-tier interstitial — sending this on Render/prod
+      // causes CORS preflight 400 when the header is not allowlisted.
+      if (isNgrokBackend()) {
+        headers["ngrok-skip-browser-warning"] = "true";
+      }
       const res = await fetch(refreshUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
-        credentials: "include", // Sends HttpOnly refreshToken cookie automatically
+        headers,
+        credentials: "include",
       });
 
       if (!res.ok) {
@@ -93,7 +98,9 @@ export async function apiFetch<T = any>(
   const url = buildApiUrl(path);
   const headers = new Headers(options.headers || {});
 
-  headers.set("ngrok-skip-browser-warning", "true");
+  if (isNgrokBackend()) {
+    headers.set("ngrok-skip-browser-warning", "true");
+  }
 
   if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
@@ -109,18 +116,16 @@ export async function apiFetch<T = any>(
   const fetchInit: RequestInit = {
     ...options,
     headers,
-    credentials: "include", // Always include cookies for FastAPI session tracking
+    credentials: "include",
   };
 
   try {
     const response = await fetch(url, fetchInit);
 
-    // If 401 Unauthorized, attempt single-flight token refresh and retry ONCE
     if (response.status === 401 && !options.skipAuth && !options._isRetry) {
       const newToken = await executeSingleFlightRefresh();
 
       if (newToken) {
-        // Retry the original request with the new access token
         return apiFetch<T>(path, {
           ...options,
           _isRetry: true,
@@ -138,10 +143,31 @@ export async function apiFetch<T = any>(
       let errorMessage = `Request failed with status ${response.status}`;
       try {
         const errJson = await response.json();
-        errorMessage = errJson.detail || errJson.error || errJson.message || errorMessage;
+        const detail = errJson.detail;
+        if (typeof detail === "string" && detail.trim()) {
+          errorMessage = detail;
+        } else if (Array.isArray(detail)) {
+          errorMessage = detail
+            .map((e: { msg?: string; loc?: unknown; message?: string } | string) => {
+              if (typeof e === "string") return e;
+              const loc = Array.isArray(e.loc) ? e.loc.slice(1).join(".") : "";
+              const msg = e.msg || e.message || JSON.stringify(e);
+              return loc ? `${loc}: ${msg}` : msg;
+            })
+            .filter(Boolean)
+            .join("; ");
+        } else if (detail && typeof detail === "object") {
+          errorMessage = (detail as { message?: string }).message || JSON.stringify(detail);
+        } else {
+          errorMessage = errJson.error || errJson.message || errorMessage;
+        }
       } catch {
-        const text = await response.text();
-        if (text) errorMessage = text;
+        try {
+          const text = await response.text();
+          if (text) errorMessage = text;
+        } catch {
+          /* keep default */
+        }
       }
 
       return {
@@ -160,7 +186,7 @@ export async function apiFetch<T = any>(
   } catch (err: any) {
     return {
       data: null,
-      error: err?.message || "Unable to reach server. Please check network connection.",
+      error: err?.message || "Network request failed.",
       status: 0,
     };
   }

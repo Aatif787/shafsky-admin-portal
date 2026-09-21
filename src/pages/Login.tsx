@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Lock, Mail, Eye, EyeOff, ShieldCheck, Plane } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
+import { homePathForRole } from "../auth/roles";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { Alert } from "../components/ui/Alert";
@@ -13,14 +14,18 @@ export const Login: React.FC = () => {
   const [localError, setLocalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login, isAuthenticated, error: authError } = useAuth();
+  const { login, isAuthenticated, error: authError, role, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || "/";
+  const requested = (location.state as { from?: { pathname?: string } })?.from?.pathname;
 
   useEffect(() => {
-    if (isAuthenticated) navigate(from, { replace: true });
-  }, [isAuthenticated, navigate, from]);
+    if (isAuthenticated) {
+      const dest =
+        requested && requested !== "/login" ? requested : homePathForRole(role || user?.role);
+      navigate(dest, { replace: true });
+    }
+  }, [isAuthenticated, navigate, requested, role, user?.role]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +37,13 @@ export const Login: React.FC = () => {
     setIsSubmitting(true);
     const result = await login(email, password);
     setIsSubmitting(false);
-    if (result.success) navigate(from, { replace: true });
-    else setLocalError(result.error || "Incorrect email or password. Please try again.");
+    if (result.success) {
+      const dest =
+        requested && requested !== "/" && requested !== "/login"
+          ? requested
+          : homePathForRole(result.role || role || user?.role);
+      navigate(dest, { replace: true });
+    } else setLocalError(result.error || "Incorrect email or password. Please try again.");
   };
 
   const displayError = localError || authError;

@@ -2,6 +2,7 @@ import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { LayoutDashboard, ClipboardList, Plane, CreditCard, Radio, Trash2, Coins, X } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
+import { isAdminRole, isStaffOrAdminRole } from "../../auth/roles";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,15 +13,18 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, backendLive }) => {
   const location = useLocation();
   const { role } = useAuth();
+  const admin = isAdminRole(role);
+  const staff = isStaffOrAdminRole(role);
   const canManageBin = role === "ADMIN" || role === "SUPER_ADMIN";
+
   const navigationItems = [
-    { name: "Operations Overview", path: "/", icon: LayoutDashboard },
-    { name: "Bookings", path: "/bookings", icon: ClipboardList },
+    ...(admin ? [{ name: "Operations Overview", path: "/", icon: LayoutDashboard }] : []),
+    ...(admin ? [{ name: "Bookings", path: "/bookings", icon: ClipboardList }] : []),
     ...(canManageBin ? [{ name: "Recycle Bin", path: "/bookings/bin", icon: Trash2 }] : []),
-    { name: "Charter Desk", path: "/charter", icon: Plane },
-    { name: "Operations", path: "/operations", icon: Radio },
-    { name: "Services & Pricing", path: "/pricing", icon: Coins },
-    { name: "Payments", path: "/payments", icon: CreditCard },
+    ...(admin ? [{ name: "Charter Desk", path: "/charter", icon: Plane }] : []),
+    ...(staff ? [{ name: "Operations", path: "/operations", icon: Radio }] : []),
+    ...(admin ? [{ name: "Services & Pricing", path: "/pricing", icon: Coins }] : []),
+    ...(admin ? [{ name: "Payments", path: "/payments", icon: CreditCard }] : []),
   ];
 
   const liveLabel = backendLive === false ? "Offline" : "Live";

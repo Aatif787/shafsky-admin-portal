@@ -1,6 +1,11 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
+import {
+  ADMIN_ROLES,
+  RECYCLE_ADMIN_ROLES,
+  STAFF_OR_ADMIN_ROLES,
+} from "./auth/roles";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
@@ -16,6 +21,10 @@ import { ComingSoon } from "./pages/ComingSoon";
 import { AccessDenied } from "./pages/AccessDenied";
 import { NotFound } from "./pages/NotFound";
 
+const adminRoles = [...ADMIN_ROLES];
+const staffRoles = [...STAFF_OR_ADMIN_ROLES];
+const recycleRoles = [...RECYCLE_ADMIN_ROLES];
+
 export const App: React.FC = () => {
   return (
     <BrowserRouter
@@ -25,30 +34,100 @@ export const App: React.FC = () => {
       }}
     >
       <Routes>
-        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/access-denied" element={<AccessDenied />} />
 
-        {/* Protected Admin Routes */}
         <Route
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={staffRoles}>
               <AdminLayout />
             </ProtectedRoute>
           }
         >
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/bookings" element={<Bookings />} />
-          <Route path="/bookings/bin" element={<BookingBin />} />
-          <Route path="/bookings/:bookingRef" element={<BookingDetail />} />
-          <Route path="/charter" element={<CharterDesk />} />
-          <Route path="/charter/:id" element={<CharterDetail />} />
-          <Route path="/operations" element={<Operations />} />
-          <Route path="/operations/:bookingRef" element={<OperationsDetail />} />
-          <Route path="/pricing" element={<AirportServices />} />
-          <Route path="/payments" element={<ComingSoon moduleName="Payment Ledger" phaseNumber="Phase 21" />} />
-          
-          {/* Super Admin Restricted Route */}
+          {/* Admin desk — bookings, charter, pricing, overview */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute allowedRoles={adminRoles}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookings"
+            element={
+              <ProtectedRoute allowedRoles={adminRoles}>
+                <Bookings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookings/bin"
+            element={
+              <ProtectedRoute allowedRoles={recycleRoles}>
+                <BookingBin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookings/:bookingRef"
+            element={
+              <ProtectedRoute allowedRoles={adminRoles}>
+                <BookingDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/charter"
+            element={
+              <ProtectedRoute allowedRoles={adminRoles}>
+                <CharterDesk />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/charter/:id"
+            element={
+              <ProtectedRoute allowedRoles={adminRoles}>
+                <CharterDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pricing"
+            element={
+              <ProtectedRoute allowedRoles={adminRoles}>
+                <AirportServices />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payments"
+            element={
+              <ProtectedRoute allowedRoles={adminRoles}>
+                <ComingSoon moduleName="Payment Ledger" phaseNumber="Phase 21" />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Ground operations — staff + admin */}
+          <Route
+            path="/operations"
+            element={
+              <ProtectedRoute allowedRoles={staffRoles}>
+                <Operations />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/operations/:bookingRef"
+            element={
+              <ProtectedRoute allowedRoles={staffRoles}>
+                <OperationsDetail />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/team"
             element={
@@ -57,9 +136,10 @@ export const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+          <Route path="/access-denied" element={<AccessDenied />} />
         </Route>
 
-        {/* Catch-all 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

@@ -14,6 +14,7 @@ import {
   Tag,
   Hash,
   Info,
+  ClipboardList,
 } from "lucide-react";
 import type { BookingRecord } from "../../types/dashboard";
 import { BookingStatusBadge } from "./BookingStatusBadge";
@@ -23,6 +24,11 @@ import {
   formatOperationalTime,
   formatCurrencyINR,
 } from "../../lib/dateUtils";
+import {
+  enquiryRouteLabel,
+  enquiryServiceDate,
+  isQuoteEnquiry,
+} from "../../lib/bookingEnquiry";
 
 /* ═══════════════════════════════════════════
    Section Card Wrapper
@@ -73,28 +79,87 @@ const Field: React.FC<FieldProps> = ({ label, value, mono }) => (
    Overview Section
    ═══════════════════════════════════════════ */
 
-export const OverviewSection: React.FC<{ booking: BookingRecord }> = ({ booking }) => (
-  <SectionCard title="Overview" icon={<Hash className="h-4 w-4 text-lime-600" />}>
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-      <Field label="Booking Ref" value={booking.bookingRef} mono />
-      <div className="flex flex-col gap-1">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-          Status
-        </span>
-        <BookingStatusBadge status={booking.status} size="md" />
+export const OverviewSection: React.FC<{ booking: BookingRecord }> = ({ booking }) => {
+  const quote = isQuoteEnquiry(booking);
+  return (
+    <SectionCard title="Overview" icon={<Hash className="h-4 w-4 text-lime-600" />}>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+        <Field label="Booking Ref" value={booking.bookingRef} mono />
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            Status
+          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <BookingStatusBadge status={booking.status} size="md" />
+            {quote && (
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                Quote enquiry
+              </span>
+            )}
+          </div>
+        </div>
+        <Field label="Created" value={formatOperationalDateTime(booking.createdAt)} />
+        <Field label="Version" value={`v${booking.version}`} mono />
+        <Field label="Service Category" value={booking.serviceCategory} />
+        <Field label="Service Type" value={booking.serviceType} />
+        <Field
+          label="Channel"
+          value={booking.metadataJson?.source || booking.metadataJson?.channel || "web"}
+        />
+        <Field label="ID" value={booking.id} mono />
       </div>
-      <Field label="Created" value={formatOperationalDateTime(booking.createdAt)} />
-      <Field label="Version" value={`v${booking.version}`} mono />
-      <Field label="Service Category" value={booking.serviceCategory} />
-      <Field label="Service Type" value={booking.serviceType} />
-      <Field
-        label="Channel"
-        value={booking.metadataJson?.channel || "web"}
-      />
-      <Field label="ID" value={booking.id} mono />
-    </div>
-  </SectionCard>
-);
+    </SectionCard>
+  );
+};
+
+/* ═══════════════════════════════════════════
+   Enquiry / Quote Section (non-airport)
+   ═══════════════════════════════════════════ */
+
+export const EnquirySection: React.FC<{ booking: BookingRecord }> = ({ booking }) => {
+  const meta = booking.metadataJson || {};
+  const details =
+    meta.details && typeof meta.details === "object" && !Array.isArray(meta.details)
+      ? (meta.details as Record<string, unknown>)
+      : {};
+  const serviceDate = enquiryServiceDate(booking);
+
+  return (
+    <SectionCard
+      title="Enquiry Details"
+      icon={<ClipboardList className="h-4 w-4 text-amber-600" />}
+    >
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+        <Field label="Category" value={booking.serviceCategory} />
+        <Field label="Service" value={booking.serviceType} />
+        <Field label="Route / Locations" value={enquiryRouteLabel(booking)} />
+        <Field label="Requested date" value={serviceDate} />
+        <Field label="Quoted amount" value={formatCurrencyINR(Number(booking.totalAmount || 0))} />
+        <Field label="Currency" value={booking.currency || "INR"} />
+      </div>
+      {Object.keys(details).length > 0 && (
+        <div className="border-t border-slate-100 pt-4 mt-5">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-2.5">
+            Request details
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {Object.entries(details).map(([key, val]) => {
+              if (val === null || val === undefined || val === "") return null;
+              if (typeof val === "object") return null;
+              return (
+                <Field
+                  key={key}
+                  label={key.replace(/_/g, " ")}
+                  value={String(val)}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </SectionCard>
+  );
+};
 
 /* ═══════════════════════════════════════════
    Customer Section

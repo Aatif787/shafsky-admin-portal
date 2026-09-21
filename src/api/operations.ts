@@ -15,6 +15,44 @@ import type {
 } from "../types/operations";
 import { parseApiError } from "./bookings";
 
+export interface DutyOfficerOption {
+  id: string;
+  name: string;
+  shift?: string;
+  airport?: string;
+}
+
+/**
+ * Fetches duty-officer roster for manual assignment:
+ * GET /api/operations/duty-officers?airport={IATA}
+ */
+export async function fetchDutyOfficers(
+  airport?: string,
+  signal?: AbortSignal
+): Promise<{ data: DutyOfficerOption[] | null; error: string | null }> {
+  try {
+    const params = new URLSearchParams();
+    if (airport && airport.trim()) params.set("airport", airport.trim().toUpperCase());
+    const qs = params.toString();
+    const res = await apiFetch<any>(`/api/operations/duty-officers${qs ? `?${qs}` : ""}`, {
+      signal,
+    });
+    if (res.error) {
+      return { data: null, error: res.error };
+    }
+    const raw = res.data;
+    const items: DutyOfficerOption[] = Array.isArray(raw?.data)
+      ? raw.data
+      : Array.isArray(raw)
+        ? raw
+        : [];
+    return { data: items, error: null };
+  } catch (err: any) {
+    if (err?.name === "AbortError") return { data: null, error: null };
+    return { data: null, error: err?.message || "Unable to load duty officers." };
+  }
+}
+
 /**
  * Derives operational priority for airport ground operations based on documented conditions:
  * - URGENT: Status is NEW with flight today/within 6 hours, OR IN_PROGRESS.

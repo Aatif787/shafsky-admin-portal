@@ -58,9 +58,15 @@ export async function fetchAdminCharterRequests(
 
     const skip = query.skip && query.skip >= 0 ? query.skip : 0;
     const limit = query.limit && query.limit >= 1 ? Math.min(query.limit, 100) : 25;
+    const priorityActive = !!(query.priority && query.priority !== "ALL");
 
-    params.set("skip", String(skip));
-    params.set("limit", String(limit));
+    if (priorityActive) {
+      params.set("skip", "0");
+      params.set("limit", "100");
+    } else {
+      params.set("skip", String(skip));
+      params.set("limit", String(limit));
+    }
 
     if (query.status && query.status !== "ALL") {
       params.set("status", query.status);
@@ -69,15 +75,13 @@ export async function fetchAdminCharterRequests(
       params.set("search", query.search.trim());
     }
 
-    const queryString = params.toString();
-    const path = `/api/v1/admin/charter/requests?${queryString}`;
-
+    const path = `/api/v1/admin/charter/requests?${params.toString()}`;
     const res = await apiFetch<any>(path, { signal });
 
     if (res.error) {
       const unavailable =
         res.status === 404
-          ? "Charter Desk is temporarily unavailable."
+          ? "No charter requests found for this query."
           : res.status === 401
             ? "Your session has expired. Please sign in again."
             : res.error;
@@ -93,32 +97,17 @@ export async function fetchAdminCharterRequests(
           ? raw
           : [];
 
-    if (sourceItems.length > 0 || Array.isArray(raw?.items) || Array.isArray(raw?.data) || Array.isArray(raw)) {
-      let items: CharterRequestRecord[] = sourceItems;
+    let items: CharterRequestRecord[] = sourceItems;
+    let total = Number(raw?.total ?? items.length);
 
-      // Filter by derived priority client-side if priority filter is specified
-      if (query.priority && query.priority !== "ALL") {
-        items = items.filter((item) => computeCharterPriority(item) === query.priority);
-      }
-
-      return {
-        data: {
-          items,
-          total: Number(raw?.total ?? items.length),
-          skip: Number(raw?.skip ?? skip),
-          limit: Number(raw?.limit ?? limit),
-        },
-        error: null,
-      };
+    if (priorityActive) {
+      const filtered = items.filter((item) => computeCharterPriority(item) === query.priority);
+      total = filtered.length;
+      items = filtered.slice(skip, skip + limit);
     }
 
     return {
-      data: {
-        items: [],
-        total: 0,
-        skip: 0,
-        limit: 25,
-      },
+      data: { items, total, skip, limit },
       error: null,
     };
   } catch (err: any) {
@@ -144,7 +133,7 @@ export async function fetchAdminCharterDetail(
     if (res.error) {
       const message =
         res.status === 404
-          ? "Charter Desk is temporarily unavailable."
+          ? "Charter request not found."
           : res.status === 401
             ? "Your session has expired. Please sign in again."
             : res.error;

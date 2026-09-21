@@ -31,6 +31,8 @@ import {
   addOperationsNote,
   triggerOperationsNotifications,
   deriveOperationsPriority,
+  fetchDutyOfficers,
+  type DutyOfficerOption,
 } from "../api/operations";
 import type {
   OperationsQueueItem,
@@ -76,6 +78,8 @@ export const OperationsDetail: React.FC = () => {
   const [selectedStaffId, setSelectedStaffId] = useState<string>("");
   const [customStaffName, setCustomStaffName] = useState<string>("");
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
+  const [dutyOfficers, setDutyOfficers] = useState<DutyOfficerOption[]>([]);
+  const [officersLoading, setOfficersLoading] = useState(false);
 
   // Note State
   const [noteText, setNoteText] = useState<string>("");
@@ -133,6 +137,21 @@ export const OperationsDetail: React.FC = () => {
     loadDetail();
   }, [loadDetail]);
 
+  useEffect(() => {
+    if (!item?.airport_code) return;
+    let cancelled = false;
+    setOfficersLoading(true);
+    fetchDutyOfficers(item.airport_code).then((res) => {
+      if (cancelled || !isMountedRef.current) return;
+      setOfficersLoading(false);
+      if (res.data) setDutyOfficers(res.data);
+      else setDutyOfficers([]);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [item?.airport_code]);
+
   /* ─── Clear Alert Banners ─── */
   const clearBanners = () => {
     setFeedbackSuccess(null);
@@ -168,13 +187,20 @@ export const OperationsDetail: React.FC = () => {
   const handleAssignOfficer = async (isAuto = false) => {
     if (!bookingRef || isAssigning) return;
     clearBanners();
+
+    if (!isAuto && !customStaffName.trim() && !selectedStaffId) {
+      setFeedbackError("Select a duty officer from the roster or enter an officer name.");
+      return;
+    }
+
     setIsAssigning(true);
 
+    const rosterMatch = dutyOfficers.find((o) => o.id === selectedStaffId);
     const payload = isAuto
       ? {}
       : {
           staff_id: selectedStaffId || undefined,
-          staff_name: customStaffName || undefined,
+          staff_name: (rosterMatch?.name || customStaffName).trim() || undefined,
           assigned_by: "ADMIN",
         };
 
@@ -186,10 +212,12 @@ export const OperationsDetail: React.FC = () => {
     if (res.error) {
       setFeedbackError(res.error);
     } else {
+      const assignedName =
+        res.data?.assigned_staff_name || rosterMatch?.name || customStaffName || "Duty Officer";
       setFeedbackSuccess(
         isAuto
-          ? `Auto-assigned duty officer: ${res.data?.assigned_staff_name || "Duty Officer"}`
-          : `Duty officer assigned: ${customStaffName}`
+          ? `Auto-assigned duty officer: ${assignedName}`
+          : `Duty officer assigned: ${assignedName}`
       );
       await loadDetail(true);
     }
@@ -691,15 +719,42 @@ export const OperationsDetail: React.FC = () => {
                 </span>
               </div>
 
-              {/* Manual officer name — no hardcoded roster */}
-              <div className="space-y-1">
+              {/* Roster + optional free-text override */}
+              <div className="space-y-2">
                 <label className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block">
-                  Officer name
+                  Duty officer roster{item.airport_code ? ` · ${item.airport_code}` : ""}
+                </label>
+                <select
+                  value={selectedStaffId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setSelectedStaffId(id);
+                    const match = dutyOfficers.find((o) => o.id === id);
+                    if (match) setCustomStaffName(match.name);
+                  }}
+                  disabled={officersLoading}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 transition-colors font-mono"
+                >
+                  <option value="">
+                    {officersLoading ? "Loading officers…" : "Select from roster"}
+                  </option>
+                  {dutyOfficers.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.name}
+                      {o.shift ? ` (${o.shift})` : ""}
+                    </option>
+                  ))}
+                </select>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block pt-1">
+                  Or enter officer name
                 </label>
                 <input
                   type="text"
                   value={customStaffName}
-                  onChange={(e) => setCustomStaffName(e.target.value)}
+                  onChange={(e) => {
+                    setCustomStaffName(e.target.value);
+                    setSelectedStaffId("");
+                  }}
                   placeholder="e.g. Officer Vikram Singh"
                   className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 transition-colors font-mono"
                 />
@@ -710,7 +765,7 @@ export const OperationsDetail: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleAssignOfficer(false)}
-                  disabled={isAssigning || !customStaffName.trim()}
+                  disabled={isAssigning || (!customStaffName.trim() && !selectedStaffId)}
                   className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 disabled:opacity-40 transition-colors cursor-pointer shadow-xs"
                 >
                   <UserPlus className="h-3.5 w-3.5" />

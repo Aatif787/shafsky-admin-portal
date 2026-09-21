@@ -34,9 +34,13 @@ import {
   ServiceSection,
   NotesSection,
   MetadataSection,
+  OverviewSection,
+  EnquirySection,
+  FinancialSection,
 } from "../components/bookings/BookingDetailSections";
 import { BookingStatusBadge } from "../components/bookings/BookingStatusBadge";
 import { formatOperationalDateTime } from "../lib/dateUtils";
+import { isQuoteEnquiry, enquiryRouteLabel, enquiryServiceDate } from "../lib/bookingEnquiry";
 import { useAuth } from "../auth/useAuth";
 
 export const BookingDetail: React.FC = () => {
@@ -260,6 +264,12 @@ export const BookingDetail: React.FC = () => {
   }
 
   const pay = (booking.metadataJson?.payment_status || "—").toString();
+  const quoteOnly = isQuoteEnquiry(booking);
+  const subtitleDate = quoteOnly
+    ? enquiryServiceDate(booking)
+    : booking.departureTime
+      ? formatOperationalDateTime(booking.departureTime)
+      : null;
 
   return (
     <div className="space-y-5 pb-8">
@@ -276,12 +286,24 @@ export const BookingDetail: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold font-mono text-slate-900">{booking.bookingRef}</h1>
             <BookingStatusBadge status={booking.status} size="md" />
-            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">{pay}</span>
+            {quoteOnly ? (
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                Quote enquiry
+              </span>
+            ) : (
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                {pay}
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 mt-1.5 font-medium">
             {booking.passengerName}
-            {booking.flightNum ? ` · ${booking.flightNum}` : ""}
-            {booking.departureTime ? ` · ${formatOperationalDateTime(booking.departureTime)}` : ""}
+            {quoteOnly
+              ? ` · ${enquiryRouteLabel(booking)}`
+              : booking.flightNum
+                ? ` · ${booking.flightNum}`
+                : ""}
+            {subtitleDate ? ` · ${subtitleDate}` : ""}
           </p>
         </div>
         <button
@@ -327,8 +349,13 @@ export const BookingDetail: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-5">
         <div className="lg:col-span-7 space-y-5">
+          <OverviewSection booking={booking} />
           <CustomerSection booking={booking} />
-          <FlightSection booking={booking} />
+          {quoteOnly ? (
+            <EnquirySection booking={booking} />
+          ) : (
+            <FlightSection booking={booking} />
+          )}
           <ServiceSection booking={booking} />
           <NotificationsSection
             booking={booking}
@@ -340,16 +367,21 @@ export const BookingDetail: React.FC = () => {
         </div>
 
         <div className="lg:col-span-3 space-y-5">
-          <PaymentOperationsSection
-            booking={booking}
-            onOpenSync={() => {
-              clearBanners();
-              setShowSyncModal(true);
-            }}
-            isSyncing={isSyncing}
-          />
+          {quoteOnly ? (
+            <FinancialSection booking={booking} />
+          ) : (
+            <PaymentOperationsSection
+              booking={booking}
+              onOpenSync={() => {
+                clearBanners();
+                setShowSyncModal(true);
+              }}
+              isSyncing={isSyncing}
+            />
+          )}
           <BookingActionBar
             booking={booking}
+            quoteOnly={quoteOnly}
             onOpenConfirm={() => {
               clearBanners();
               setShowConfirmModal(true);
