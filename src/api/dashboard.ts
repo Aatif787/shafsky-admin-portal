@@ -110,7 +110,6 @@ export async function fetchDashboardData(): Promise<{ data: DashboardData | null
       ? operationsRes.data
       : [];
 
-    const todayStr = new Date().toISOString().split("T")[0];
     const operationsMetrics: OperationsSummaryMetrics = {
       newCount: opsList.filter((i) => (i.status || "").toUpperCase() === "NEW").length,
       assignedCount: opsList.filter((i) => (i.status || "").toUpperCase() === "ASSIGNED").length,
