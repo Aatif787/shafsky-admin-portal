@@ -31,6 +31,13 @@ export const PaymentOperationsSection: React.FC<PaymentOperationsSectionProps> =
     </div>
   );
 
+  const isIcici =
+    meta.payment_gateway === "ICICI" ||
+    String(channel).toLowerCase().includes("icici") ||
+    (razorpayOrderId && !String(razorpayOrderId).startsWith("order_") && !String(razorpayOrderId).startsWith("plink_"));
+
+  const gatewayName = isIcici ? "ICICI Bank" : "Razorpay";
+
   return (
     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
       <div className="px-4 py-3 border-b border-slate-200 bg-slate-50/50">
@@ -49,10 +56,11 @@ export const PaymentOperationsSection: React.FC<PaymentOperationsSectionProps> =
             {paymentStatusRaw}
           </span>
         )}
+        {row("Payment Gateway", <span className="font-semibold text-slate-800">{gatewayName}</span>)}
         {row("Amount", <span className="font-mono font-bold text-lime-700">{formatCurrencyINR(booking.totalAmount)}</span>)}
         {row("Currency", booking.currency, true)}
-        {row("Razorpay Order ID", razorpayOrderId ? String(razorpayOrderId) : null, true)}
-        {row("Razorpay Payment ID", razorpayPaymentId ? String(razorpayPaymentId) : null, true)}
+        {row(`${isIcici ? "ICICI" : "Razorpay"} Order ID`, razorpayOrderId ? String(razorpayOrderId) : null, true)}
+        {row(`${isIcici ? "ICICI" : "Razorpay"} Payment ID`, razorpayPaymentId ? String(razorpayPaymentId) : null, true)}
         {row("Transaction ID", transactionId ? String(transactionId) : null, true)}
         {row(
           "Paid At",
@@ -69,7 +77,7 @@ export const PaymentOperationsSection: React.FC<PaymentOperationsSectionProps> =
           disabled={isSyncing}
           className="mt-3 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 disabled:opacity-50 transition-all"
         >
-          {isSyncing ? "Reconciling…" : "Reconcile with Razorpay"}
+          {isSyncing ? "Reconciling…" : `Reconcile with ${gatewayName}`}
         </button>
       </div>
     </div>

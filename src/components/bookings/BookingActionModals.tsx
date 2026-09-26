@@ -259,6 +259,7 @@ interface SyncPaymentModalProps {
   onClose: () => void;
   onConfirm: () => void;
   bookingRef: string;
+  gateway?: string;
   isLoading: boolean;
 }
 
@@ -267,14 +268,15 @@ export const SyncPaymentModal: React.FC<SyncPaymentModalProps> = ({
   onClose,
   onConfirm,
   bookingRef,
+  gateway,
   isLoading,
 }) => (
-  <ModalContainer isOpen={isOpen} onClose={onClose} title="Reconcile & Synchronize Payment">
+  <ModalContainer isOpen={isOpen} onClose={onClose} title={`Reconcile Payment (${gateway || "Gateway"})`}>
     <div className="space-y-4">
       <div className="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-700 leading-relaxed font-medium">
         <RefreshCw className="h-4 w-4 text-lime-600 shrink-0 mt-0.5" />
         <div>
-          This action queries the live Razorpay payment gateway for booking{" "}
+          This action queries the live <strong className="text-slate-900">{gateway || "payment gateway"}</strong> for booking{" "}
           <strong className="text-slate-900 font-mono font-bold">{bookingRef}</strong> and synchronizes the local database
           if verified payment funds exist.
         </div>
@@ -296,7 +298,7 @@ export const SyncPaymentModal: React.FC<SyncPaymentModalProps> = ({
           className="px-4 py-2 text-xs font-semibold text-white bg-lime-600 hover:bg-lime-700 rounded-lg shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
         >
           {isLoading && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
-          Sync Now
+          Sync with {gateway || "Gateway"}
         </button>
       </div>
     </div>

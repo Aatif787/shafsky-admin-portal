@@ -433,6 +433,13 @@ export const BookingDetail: React.FC = () => {
         onClose={() => setShowSyncModal(false)}
         onConfirm={handleSyncPayment}
         bookingRef={booking.bookingRef}
+        gateway={
+          booking.metadataJson?.payment_gateway === "ICICI" ||
+          String(booking.metadataJson?.channel || "").toLowerCase().includes("icici") ||
+          (booking.metadataJson?.order_id && !String(booking.metadataJson?.order_id).startsWith("order_") && !String(booking.metadataJson?.order_id).startsWith("plink_"))
+            ? "ICICI Bank"
+            : "Razorpay"
+        }
         isLoading={isSyncing}
       />
       <RecycleBookingModal
