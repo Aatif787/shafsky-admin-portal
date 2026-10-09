@@ -179,53 +179,191 @@ export const CustomerSection: React.FC<{ booking: BookingRecord }> = ({ booking 
    Flight Section
    ═══════════════════════════════════════════ */
 
-export const FlightSection: React.FC<{ booking: BookingRecord }> = ({ booking }) => (
-  <SectionCard title="Flight Information" icon={<Plane className="h-4 w-4 text-violet-600" />}>
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-      <Field label="Flight Number" value={booking.flightNum} mono />
-      <Field label="Origin" value={booking.originCode} mono />
-      <Field label="Destination" value={booking.destCode} mono />
-      <Field
-        label="Flight Type"
-        value={booking.metadataJson?.flight_type}
-      />
-      <Field
-        label="Departure"
-        value={
-          booking.departureTime ? (
-            <span>
-              <span className="text-slate-900 font-medium">{formatOperationalDate(booking.departureTime)}</span>
-              <span className="text-slate-500 ml-1.5">
-                {formatOperationalTime(booking.departureTime)}
+export const FlightSection: React.FC<{ booking: BookingRecord }> = ({ booking }) => {
+  const meta = booking.metadataJson || {};
+  const isTransit =
+    meta.journey_type === "TRANSIT" ||
+    meta.direction === "transit" ||
+    Boolean(meta.connecting_flight_number) ||
+    Boolean(meta.connecting_flight);
+
+  const transitHub = meta.transit_hub || meta.transit_code || meta.service_airport;
+  const inboundFlight = meta.incoming_flight || {};
+  const connectingFlight = meta.connecting_flight || {};
+
+  if (isTransit) {
+    return (
+      <SectionCard title="Flight Information (Transit Journey)" icon={<Plane className="h-4 w-4 text-violet-600" />}>
+        <div className="space-y-4">
+          {/* Journey Route Banner */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-purple-50/70 border border-purple-200 text-xs">
+            <div className="flex items-center gap-2 font-mono font-bold text-purple-950">
+              <span className="bg-white px-2 py-0.5 rounded border border-purple-200">{booking.originCode || inboundFlight.origin || "Origin"}</span>
+              <span className="text-purple-600">→</span>
+              <span className="bg-purple-100 text-purple-900 px-2.5 py-0.5 rounded border border-purple-300 font-extrabold">
+                {transitHub || "Transit Hub"} (Hub)
               </span>
-            </span>
-          ) : null
-        }
-      />
-      <Field
-        label="Arrival"
-        value={
-          booking.arrivalTime ? (
-            <span>
-              <span className="text-slate-900 font-medium">{formatOperationalDate(booking.arrivalTime)}</span>
-              <span className="text-slate-500 ml-1.5">
-                {formatOperationalTime(booking.arrivalTime)}
+              <span className="text-purple-600">→</span>
+              <span className="bg-white px-2 py-0.5 rounded border border-purple-200">{booking.destCode || connectingFlight.destination || "Destination"}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono uppercase tracking-wider bg-purple-200/80 text-purple-900 font-bold px-2 py-0.5 rounded">
+                {meta.flight_type || meta.transit_type || "TRANSIT"}
               </span>
-            </span>
-          ) : null
-        }
-      />
-      <Field
-        label="Terminal"
-        value={booking.metadataJson?.terminal}
-      />
-      <Field
-        label="Journey Type"
-        value={booking.metadataJson?.journey_type}
-      />
-    </div>
-  </SectionCard>
-);
+            </div>
+          </div>
+
+          {/* Two Legs Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 1. Incoming Flight */}
+            <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-blue-500" />
+                  Incoming Flight (Leg 1)
+                </span>
+                <span className="text-[10px] font-mono font-bold text-slate-500">
+                  {booking.originCode || inboundFlight.origin || "Origin"} → {transitHub}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <Field
+                  label="Flight Number"
+                  value={meta.incoming_flight_number || inboundFlight.flight_number || booking.flightNum?.split("/")[0]?.trim()}
+                  mono
+                />
+                <Field
+                  label="Airline"
+                  value={inboundFlight.airline || (inboundFlight.airline_iata ? `Code: ${inboundFlight.airline_iata}` : undefined)}
+                />
+                <Field
+                  label="Arrival / Date"
+                  value={
+                    inboundFlight.date || meta.incoming_flight_date ? (
+                      <span>
+                        <span className="text-slate-900 font-medium">{formatOperationalDate(inboundFlight.date || meta.incoming_flight_date)}</span>
+                        {inboundFlight.arrival_time && (
+                          <span className="text-slate-500 ml-1.5 font-mono">
+                            {formatOperationalTime(inboundFlight.arrival_time)}
+                          </span>
+                        )}
+                      </span>
+                    ) : booking.arrivalTime ? (
+                      <span>
+                        <span className="text-slate-900 font-medium">{formatOperationalDate(booking.arrivalTime)}</span>
+                        <span className="text-slate-500 ml-1.5 font-mono">{formatOperationalTime(booking.arrivalTime)}</span>
+                      </span>
+                    ) : null
+                  }
+                />
+                <Field
+                  label="Terminal"
+                  value={inboundFlight.terminal || meta.terminal}
+                />
+              </div>
+            </div>
+
+            {/* 2. Connecting Flight */}
+            <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  Connecting Flight (Leg 2)
+                </span>
+                <span className="text-[10px] font-mono font-bold text-slate-500">
+                  {transitHub} → {booking.destCode || connectingFlight.destination || "Destination"}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <Field
+                  label="Flight Number"
+                  value={meta.connecting_flight_number || connectingFlight.flight_number || booking.flightNum?.split("/")[1]?.trim()}
+                  mono
+                />
+                <Field
+                  label="Airline"
+                  value={connectingFlight.airline || (connectingFlight.airline_iata ? `Code: ${connectingFlight.airline_iata}` : undefined)}
+                />
+                <Field
+                  label="Departure / Date"
+                  value={
+                    connectingFlight.date || meta.connecting_flight_date ? (
+                      <span>
+                        <span className="text-slate-900 font-medium">{formatOperationalDate(connectingFlight.date || meta.connecting_flight_date)}</span>
+                        {connectingFlight.departure_time && (
+                          <span className="text-slate-500 ml-1.5 font-mono">
+                            {formatOperationalTime(connectingFlight.departure_time)}
+                          </span>
+                        )}
+                      </span>
+                    ) : booking.departureTime ? (
+                      <span>
+                        <span className="text-slate-900 font-medium">{formatOperationalDate(booking.departureTime)}</span>
+                        <span className="text-slate-500 ml-1.5 font-mono">{formatOperationalTime(booking.departureTime)}</span>
+                      </span>
+                    ) : null
+                  }
+                />
+                <Field
+                  label="Terminal"
+                  value={connectingFlight.terminal}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+    );
+  }
+
+  return (
+    <SectionCard title="Flight Information" icon={<Plane className="h-4 w-4 text-violet-600" />}>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+        <Field label="Flight Number" value={booking.flightNum} mono />
+        <Field label="Origin" value={booking.originCode} mono />
+        <Field label="Destination" value={booking.destCode} mono />
+        <Field
+          label="Flight Type"
+          value={booking.metadataJson?.flight_type}
+        />
+        <Field
+          label="Departure"
+          value={
+            booking.departureTime ? (
+              <span>
+                <span className="text-slate-900 font-medium">{formatOperationalDate(booking.departureTime)}</span>
+                <span className="text-slate-500 ml-1.5">
+                  {formatOperationalTime(booking.departureTime)}
+                </span>
+              </span>
+            ) : null
+          }
+        />
+        <Field
+          label="Arrival"
+          value={
+            booking.arrivalTime ? (
+              <span>
+                <span className="text-slate-900 font-medium">{formatOperationalDate(booking.arrivalTime)}</span>
+                <span className="text-slate-500 ml-1.5">
+                  {formatOperationalTime(booking.arrivalTime)}
+                </span>
+              </span>
+            ) : null
+          }
+        />
+        <Field
+          label="Terminal"
+          value={booking.metadataJson?.terminal}
+        />
+        <Field
+          label="Journey Type"
+          value={booking.metadataJson?.journey_type}
+        />
+      </div>
+    </SectionCard>
+  );
+};
 
 /* ═══════════════════════════════════════════
    Service Section

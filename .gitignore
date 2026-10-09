@@ -1,8 +1,14 @@
+# Dependencies
 node_modules
+
+# Build
 dist
 dist-ssr
+
+# Environment: never commit real env files. .env.example stays tracked.
+.env
+.env.*
+!.env.example
 *.local
-.env.local
-.env.*.local
 .DS_Store
 *.log
