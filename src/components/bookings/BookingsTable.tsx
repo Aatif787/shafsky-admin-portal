@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import type { BookingRecord } from "../../types/dashboard";
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import { formatOperationalDateTime, formatCurrencyINR } from "../../lib/dateUtils";
+import { isQuoteEnquiry, enquiryRouteLabel, enquiryServiceDate } from "../../lib/bookingEnquiry";
 
 interface BookingsTableProps {
   bookings: BookingRecord[];
@@ -67,40 +68,52 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                 </td>
               </tr>
             ) : (
-              bookings.map((booking) => (
-                <tr
-                  key={booking.id}
-                  onClick={() => navigate(`/bookings/${booking.bookingRef}`)}
-                  className="hover:bg-lime-50/30 cursor-pointer transition-colors group"
-                >
-                  <td className="px-4 py-3 font-mono text-xs font-semibold text-slate-800 group-hover:text-lime-700 transition-colors">
-                    {booking.bookingRef}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-slate-900">{booking.passengerName}</div>
-                    <div className="text-[11px] text-slate-500">{booking.passengerEmail}</div>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-slate-700 font-medium">{booking.flightNum || "—"}</td>
-                  <td className="px-4 py-3 font-mono text-slate-700">
-                    {booking.originCode || "—"} → {booking.destCode || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {formatOperationalDateTime(booking.departureTime || booking.createdAt)}
-                  </td>
-                  <td className="px-4 py-3 text-slate-700 font-medium">
-                    {booking.metadataJson?.package || booking.serviceType || "—"}
-                  </td>
-                  <td className="px-4 py-3 tabular-nums font-semibold text-slate-900">
-                    {formatCurrencyINR(booking.totalAmount)}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    <span className="inline-block px-1.5 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700">
-                      {(booking.metadataJson?.payment_status || "—").toString()}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <BookingStatusBadge status={booking.status} />
-                  </td>
+              bookings.map((booking) => {
+                const quote = isQuoteEnquiry(booking);
+                const travelDate = quote
+                  ? enquiryServiceDate(booking) || formatOperationalDateTime(booking.departureTime || booking.createdAt)
+                  : formatOperationalDateTime(booking.departureTime || booking.createdAt);
+
+                return (
+                  <tr
+                    key={booking.id}
+                    onClick={() => navigate(`/bookings/${booking.bookingRef}`)}
+                    className="hover:bg-lime-50/30 cursor-pointer transition-colors group"
+                  >
+                    <td className="px-4 py-3 font-mono text-xs font-semibold text-slate-800 group-hover:text-lime-700 transition-colors">
+                      {booking.bookingRef}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-slate-900">{booking.passengerName}</div>
+                      <div className="text-[11px] text-slate-500">{booking.passengerEmail}</div>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-slate-700 font-medium">{booking.flightNum || "—"}</td>
+                    <td className="px-4 py-3 font-mono text-slate-700">
+                      {quote ? enquiryRouteLabel(booking) : `${booking.originCode || "—"} → ${booking.destCode || "—"}`}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {travelDate}
+                    </td>
+                    <td className="px-4 py-3 text-slate-700 font-medium">
+                      {booking.metadataJson?.package || booking.serviceCategory || booking.serviceType || "—"}
+                    </td>
+                    <td className="px-4 py-3 tabular-nums font-semibold text-slate-900">
+                      {quote ? (
+                        <span className="text-slate-500 font-normal italic">Quote only</span>
+                      ) : (
+                        formatCurrencyINR(booking.totalAmount)
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      <span className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-medium ${
+                        quote ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-slate-100 text-slate-700"
+                      }`}>
+                        {quote ? "Enquiry" : (booking.metadataJson?.payment_status || "—").toString()}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <BookingStatusBadge status={booking.status} />
+                    </td>
                   <td className="px-4 py-3 text-slate-500 text-[11px]">
                     {formatOperationalDateTime(booking.createdAt)}
                   </td>
@@ -121,8 +134,9 @@ export const BookingsTable: React.FC<BookingsTableProps> = ({
                     </td>
                   ) : null}
                 </tr>
-              ))
-            )}
+              );
+            })
+          )}
           </tbody>
         </table>
       </div>

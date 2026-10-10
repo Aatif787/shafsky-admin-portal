@@ -13,6 +13,8 @@ interface BookingsFiltersProps {
 const CATEGORY_OPTIONS = [
   { value: "ALL", label: "All services" },
   { value: "Airport Assistance", label: "Airport Assistance" },
+  { value: "Round Trip", label: "Round Trip" },
+  { value: "Ticketing", label: "Ticketing" },
   { value: "Ground Transport", label: "Ground Transport" },
   { value: "Travel Support", label: "Travel Support / Hotels" },
   { value: "Medical Assistance", label: "Medical Assistance" },
