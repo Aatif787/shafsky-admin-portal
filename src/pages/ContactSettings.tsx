@@ -45,7 +45,7 @@ const CANONICAL_SERVICES: CanonicalServiceMeta[] = [
   },
   {
     key: "hotel",
-    name: "Hotel",
+    name: "Hotels",
     description: "Airport transit hotel suites and luxury partner hospitality concierge.",
     icon: HotelIcon,
   },
