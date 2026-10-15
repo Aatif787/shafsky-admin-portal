@@ -17,6 +17,7 @@ import { CharterDetail } from "./pages/CharterDetail";
 import { Operations } from "./pages/Operations";
 import { OperationsDetail } from "./pages/OperationsDetail";
 import { AirportServices } from "./pages/AirportServices";
+import { ContactSettings } from "./pages/ContactSettings";
 import { ComingSoon } from "./pages/ComingSoon";
 import { AccessDenied } from "./pages/AccessDenied";
 import { NotFound } from "./pages/NotFound";
@@ -98,6 +99,14 @@ export const App: React.FC = () => {
             element={
               <ProtectedRoute allowedRoles={adminRoles}>
                 <AirportServices />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contact-settings"
+            element={
+              <ProtectedRoute allowedRoles={adminRoles}>
+                <ContactSettings />
               </ProtectedRoute>
             }
           />

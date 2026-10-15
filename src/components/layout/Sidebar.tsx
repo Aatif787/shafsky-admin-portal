@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, Plane, CreditCard, Radio, Trash2, Coins, X } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Plane, CreditCard, Radio, Trash2, Coins, PhoneCall, X } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
 import { isAdminRole, isStaffOrAdminRole } from "../../auth/roles";
 
@@ -24,6 +24,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, backendLive }
     ...(admin ? [{ name: "Charter Desk", path: "/charter", icon: Plane }] : []),
     ...(staff ? [{ name: "Operations", path: "/operations", icon: Radio }] : []),
     ...(admin ? [{ name: "Services & Pricing", path: "/pricing", icon: Coins }] : []),
+    ...(admin ? [{ name: "Website Contacts", path: "/contact-settings", icon: PhoneCall }] : []),
     ...(admin ? [{ name: "Payments", path: "/payments", icon: CreditCard }] : []),
   ];
 
