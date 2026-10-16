@@ -33,7 +33,7 @@ interface CanonicalServiceMeta {
 const CANONICAL_SERVICES: CanonicalServiceMeta[] = [
   {
     key: "meet_greet_lounge",
-    name: "Meet & Greet & Lounge",
+    name: "Meet & Greet Lounge",
     description: "Airport tarmac reception, VIP lounge access, and expedited airside assistance.",
     icon: Sparkles,
   },
