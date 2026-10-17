@@ -9,6 +9,7 @@ import {
   type AirportServiceItem,
 } from "../api/airportServices";
 import { useAuth } from "../auth/useAuth";
+import { isAdminRole } from "../auth/roles";
 import { formatOperationalDateTime } from "../lib/dateUtils";
 import {
   Coins,
@@ -63,7 +64,7 @@ export const AirportServices: React.FC = () => {
   const { role } = useAuth();
   const isSuperAdmin = role === "SUPER_ADMIN";
   const isAdmin = role === "ADMIN";
-  const canEdit = isSuperAdmin || isAdmin;
+  const canEdit = isSuperAdmin || isAdmin || isAdminRole(role);
 
   // Tab State
   const [activeTab, setActiveTab] = useState<"active" | "recycle_bin">("active");
@@ -88,6 +89,7 @@ export const AirportServices: React.FC = () => {
   const [editPrice, setEditPrice] = useState<string>("");
   const [editNoticeHours, setEditNoticeHours] = useState<string>("");
   const [editTerminal, setEditTerminal] = useState<string>("");
+  const [editIsAvailable, setEditIsAvailable] = useState<boolean>(true);
   const [editFeatures, setEditFeatures] = useState<string[]>([]);
   const [newFeatureText, setNewFeatureText] = useState<string>("");
   const [isBulkMode, setIsBulkMode] = useState<boolean>(false);
@@ -200,6 +202,7 @@ export const AirportServices: React.FC = () => {
     setEditPrice(String(item.price));
     setEditNoticeHours(item.min_booking_notice_hours ? String(item.min_booking_notice_hours) : "");
     setEditTerminal(item.terminal || "");
+    setEditIsAvailable(item.is_available);
     const initialFeatures = Array.isArray(item.features)
       ? item.features.map((f) => String(f).trim()).filter(Boolean)
       : [];
@@ -310,6 +313,7 @@ export const AirportServices: React.FC = () => {
       min_booking_notice_hours: numNotice,
       terminal: editTerminal.trim() || undefined,
       features: finalFeatures,
+      is_available: editIsAvailable,
     });
 
     setIsSaving(false);
@@ -318,12 +322,12 @@ export const AirportServices: React.FC = () => {
       setEditError(res.error);
     } else if (res.data) {
       setServices((prev) =>
-        prev.map((s) => (s.id === editingItem.id ? { ...s, ...res.data } : s))
+        prev.map((s) => (s.id === editingItem.id ? { ...s, ...res.data, is_available: editIsAvailable } : s))
       );
       setEditingItem(null);
       showToast(
         "success",
-        `Successfully updated ${editingItem.service_name} at ${editingItem.airport_code} (Price: ₹${numPrice.toLocaleString("en-IN")}, ${finalFeatures.length} inclusions)`
+        `Successfully updated ${editingItem.service_name} at ${editingItem.airport_code} (Status: ${editIsAvailable ? "ACTIVE" : "DISABLED"}, Price: ₹${numPrice.toLocaleString("en-IN")}, ${finalFeatures.length} inclusions)`
       );
     }
   };
@@ -339,7 +343,7 @@ export const AirportServices: React.FC = () => {
       showToast("error", `Failed to toggle status: ${res.error}`);
     } else if (res.data) {
       setServices((prev) =>
-        prev.map((s) => (s.id === item.id ? { ...s, is_available: newStatus } : s))
+        prev.map((s) => (s.id === item.id ? { ...s, ...res.data, is_available: newStatus } : s))
       );
       showToast(
         "success",
@@ -1217,8 +1221,8 @@ export const AirportServices: React.FC = () => {
                 </div>
               </div>
 
-              {/* Grid: Price, Terminal, Cutoff Notice */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Grid: Price, Status, Terminal, Cutoff Notice */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 {/* Price Input */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -1246,6 +1250,40 @@ export const AirportServices: React.FC = () => {
                       </span>
                     )}
                   </div>
+                </div>
+
+                {/* Service Status Toggle */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Availability Status
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setEditIsAvailable((prev) => !prev)}
+                    disabled={!canEdit}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-semibold transition-all ${
+                      editIsAvailable
+                        ? "bg-lime-50 text-lime-800 border-lime-300 hover:bg-lime-100"
+                        : "bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100"
+                    } disabled:opacity-60 disabled:cursor-not-allowed shadow-xs`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className={`h-2 w-2 rounded-full ${
+                          editIsAvailable ? "bg-lime-600" : "bg-rose-500"
+                        }`}
+                      />
+                      {editIsAvailable ? "Active" : "Disabled"}
+                    </span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400">
+                      {editIsAvailable ? "ONLINE" : "OFFLINE"}
+                    </span>
+                  </button>
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    {editIsAvailable
+                      ? "Available for booking"
+                      : "Hidden from customer booking"}
+                  </span>
                 </div>
 
                 {/* Terminal Specification */}
