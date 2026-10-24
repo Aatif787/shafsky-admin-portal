@@ -203,8 +203,11 @@ export const AirportServices: React.FC = () => {
     setEditNoticeHours(item.min_booking_notice_hours ? String(item.min_booking_notice_hours) : "");
     setEditTerminal(item.terminal || "");
     setEditIsAvailable(item.is_available);
-    const initialFeatures = Array.isArray(item.features)
-      ? item.features.map((f) => String(f).trim()).filter(Boolean)
+    const rawFeatures = (Array.isArray(item.features) && item.features.length > 0)
+      ? item.features
+      : (Array.isArray(item.inclusions) ? item.inclusions : item.features);
+    const initialFeatures = Array.isArray(rawFeatures)
+      ? rawFeatures.map((f) => String(f).trim()).filter(Boolean)
       : [];
     setEditFeatures(initialFeatures);
     setBulkFeaturesText(initialFeatures.join("\n"));
@@ -313,6 +316,7 @@ export const AirportServices: React.FC = () => {
       min_booking_notice_hours: numNotice,
       terminal: editTerminal.trim() || undefined,
       features: finalFeatures,
+      inclusions: finalFeatures,
       is_available: editIsAvailable,
     });
 
@@ -321,14 +325,17 @@ export const AirportServices: React.FC = () => {
     if (res.error) {
       setEditError(res.error);
     } else if (res.data) {
+      const updatedData = res.data;
       setServices((prev) =>
-        prev.map((s) => (s.id === editingItem.id ? { ...s, ...res.data, is_available: editIsAvailable } : s))
+        prev.map((s) => (s.id === editingItem.id ? { ...s, ...updatedData, is_available: editIsAvailable } : s))
       );
       setEditingItem(null);
       showToast(
         "success",
         `Successfully updated ${editingItem.service_name} at ${editingItem.airport_code} (Status: ${editIsAvailable ? "ACTIVE" : "DISABLED"}, Price: ₹${numPrice.toLocaleString("en-IN")}, ${finalFeatures.length} inclusions)`
       );
+    } else {
+      setEditError("Failed to update service inclusions. Empty response received from server.");
     }
   };
 
@@ -721,13 +728,13 @@ export const AirportServices: React.FC = () => {
                                 onClick={() => handleOpenEdit(item)}
                                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 hover:bg-lime-50 text-slate-600 hover:text-lime-800 border border-slate-200 hover:border-lime-300 transition-all cursor-pointer"
                                 title={
-                                  item.features && item.features.length > 0
-                                    ? `Inclusions (${item.features.length}):\n• ${item.features.join("\n• ")}`
+                                  (item.features?.length || (item.inclusions?.length ?? 0)) > 0
+                                    ? `Inclusions (${item.features?.length || item.inclusions?.length}):\n• ${(item.features || item.inclusions || []).join("\n• ")}`
                                     : "No inclusions set (Click to configure)"
                                 }
                               >
                                 <ListChecks className="h-3 w-3 text-lime-600" />
-                                <span>{item.features?.length || 0} Inclusions</span>
+                                <span>{(item.features?.length || item.inclusions?.length) || 0} Inclusions</span>
                               </button>
                             </div>
                           </div>

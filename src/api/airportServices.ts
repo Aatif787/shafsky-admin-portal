@@ -16,6 +16,7 @@ export interface AirportServiceItem {
   terminal: string;
   is_available: boolean;
   features: string[];
+  inclusions?: string[];
   short_description: string;
   min_booking_notice_hours: number;
   updated_at: string | null;
@@ -60,13 +61,22 @@ export async function updateAirportServicePrice(
     is_available?: boolean;
     terminal?: string;
     features?: string[];
+    inclusions?: string[];
     short_description?: string;
     min_booking_notice_hours?: number;
   }
 ) {
+  const inclusionsData = payload.features !== undefined ? payload.features : payload.inclusions;
+  const bodyPayload: Record<string, any> = {
+    ...payload,
+  };
+  if (inclusionsData !== undefined) {
+    bodyPayload.features = inclusionsData;
+    bodyPayload.inclusions = inclusionsData;
+  }
   return apiFetch<AirportServiceItem>(`/api/admin/airport-services/${id}`, {
     method: "PATCH",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(bodyPayload),
   });
 }
 
