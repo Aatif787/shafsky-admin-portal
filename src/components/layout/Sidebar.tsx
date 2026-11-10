@@ -1,8 +1,8 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, Plane, CreditCard, Radio, Trash2, Coins, PhoneCall, X } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Plane, CreditCard, Radio, Trash2, Coins, PhoneCall, MessageCircle, X } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
-import { isAdminRole, isStaffOrAdminRole } from "../../auth/roles";
+import { isAdminRole, isStaffOrAdminRole, isSuperAdminRole } from "../../auth/roles";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,6 +15,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, backendLive }
   const { role } = useAuth();
   const admin = isAdminRole(role);
   const staff = isStaffOrAdminRole(role);
+  const superAdmin = isSuperAdminRole(role);
   const canManageBin = role === "ADMIN" || role === "SUPER_ADMIN";
 
   const navigationItems = [
@@ -25,6 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, backendLive }
     ...(staff ? [{ name: "Operations", path: "/operations", icon: Radio }] : []),
     ...(admin ? [{ name: "Services & Pricing", path: "/pricing", icon: Coins }] : []),
     ...(admin ? [{ name: "Website Contacts", path: "/contact-settings", icon: PhoneCall }] : []),
+    ...(superAdmin ? [{ name: "WhatsApp Notifications", path: "/whatsapp-notifications", icon: MessageCircle }] : []),
     ...(admin ? [{ name: "Payments", path: "/payments", icon: CreditCard }] : []),
   ];
 

@@ -26,6 +26,10 @@ export function isAdminRole(role?: string | null): boolean {
   return !!role && (ADMIN_ROLES as readonly string[]).includes(role.toUpperCase());
 }
 
+export function isSuperAdminRole(role?: string | null): boolean {
+  return (role || "").toUpperCase() === "SUPER_ADMIN";
+}
+
 export function isStaffOrAdminRole(role?: string | null): boolean {
   return !!role && (STAFF_OR_ADMIN_ROLES as readonly string[]).includes(role.toUpperCase());
 }
