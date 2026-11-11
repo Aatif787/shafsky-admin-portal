@@ -11,6 +11,7 @@ import {
   fetchServiceRoutes,
   saveServiceRoutes,
   updateNotificationRecipient,
+  type LiveRecipient,
   type NotificationRecipient,
   type ServiceRouting,
 } from "../api/notificationRouting";
@@ -38,6 +39,7 @@ function sameIds(left: string[], right: string[]): boolean {
 
 export const WhatsAppNotificationSettings: React.FC = () => {
   const [routingMode, setRoutingMode] = useState<string | null>(null);
+  const [liveRecipients, setLiveRecipients] = useState<LiveRecipient[]>([]);
   const [recipients, setRecipients] = useState<NotificationRecipient[]>([]);
   const [services, setServices] = useState<ServiceRouting[]>([]);
   const [drafts, setDrafts] = useState<Record<string, string[]>>({});
@@ -86,6 +88,7 @@ export const WhatsAppNotificationSettings: React.FC = () => {
       setError(recipientResult.error || routeResult.error || settingsResult.error);
     } else {
       setRoutingMode(settingsResult.data?.routing_mode || "env");
+      setLiveRecipients(settingsResult.data?.live_recipients || []);
       setRecipients(recipientResult.data || []);
       applyServices(routeResult.data || []);
       setHasLoaded(true);
@@ -284,7 +287,7 @@ export const WhatsAppNotificationSettings: React.FC = () => {
         </Alert>
       ) : hasLoaded ? (
         <Alert variant="info" title="Live notifications currently use environment configuration.">
-          Saved recipients and service assignments are stored for database routing. They are not used while routing mode stays on environment configuration.
+          The numbers under Currently receiving are the backend numbers getting operations alerts now.
         </Alert>
       ) : null}
 
@@ -300,8 +303,40 @@ export const WhatsAppNotificationSettings: React.FC = () => {
         <>
           <section className="space-y-4">
             <div>
-              <h2 className="text-base font-semibold text-slate-900">Recipients</h2>
-              <p className="mt-1 text-sm text-slate-500">People who can receive an operations WhatsApp alert.</p>
+              <h2 className="text-base font-semibold text-slate-900">Currently receiving</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {routingMode === "database"
+                  ? "Active recipients with a service assignment. These numbers receive operations alerts now."
+                  : "These are the notification numbers already configured in the backend."}
+              </p>
+            </div>
+            {liveRecipients.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm text-slate-500">
+                No notification numbers are configured.
+              </div>
+            ) : (
+              <ul className="divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                {liveRecipients.map((recipient) => (
+                  <li key={`${recipient.label}-${recipient.phone_number}`} className="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-900">{recipient.label}</p>
+                      <p className="mt-0.5 text-sm text-slate-500">{formatPhone(recipient.phone_number)}</p>
+                    </div>
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                      Receiving
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900">Saved recipients</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Extra recipients stored for service routing. They receive alerts when routing mode is database.
+              </p>
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">

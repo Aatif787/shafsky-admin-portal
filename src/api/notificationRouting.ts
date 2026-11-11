@@ -37,9 +37,15 @@ export interface RecipientWrite {
   is_active?: boolean;
 }
 
+export interface LiveRecipient {
+  label: string;
+  phone_number: string;
+}
+
 export interface RoutingSettings {
   routing_mode: string;
   settings_id: string;
+  live_recipients: LiveRecipient[];
 }
 
 const BASE = "/api/admin/whatsapp-notifications";
