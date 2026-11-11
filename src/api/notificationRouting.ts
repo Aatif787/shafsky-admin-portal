@@ -82,6 +82,32 @@ export function fetchRoutingSettings() {
   return apiFetch<RoutingSettings>(`${BASE}/settings`, { method: "GET" });
 }
 
+export interface AdoptEnvRoutingResult {
+  routing_mode: string;
+  adopted: boolean;
+  recipients_created: number;
+  routes_created: number;
+}
+
+export interface RecipientServicesResult {
+  recipient_id: string;
+  service_keys: string[];
+}
+
+export function adoptEnvironmentRouting() {
+  return apiFetch<AdoptEnvRoutingResult>(`${BASE}/adopt-env-routing`, {
+    method: "POST",
+    body: "{}",
+  });
+}
+
+export function saveRecipientServices(recipientId: string, serviceKeys: string[]) {
+  return apiFetch<RecipientServicesResult>(`${BASE}/recipients/${recipientId}/services`, {
+    method: "PUT",
+    body: JSON.stringify({ service_keys: serviceKeys }),
+  });
+}
+
 export function saveServiceRoutes(
   serviceKey: string,
   recipientIds: string[]

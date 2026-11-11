@@ -4,15 +4,16 @@ import { Alert } from "../components/ui/Alert";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import {
+  adoptEnvironmentRouting,
   createNotificationRecipient,
   deleteNotificationRecipient,
   fetchNotificationRecipients,
   fetchRoutingSettings,
   fetchServiceRoutes,
-  saveServiceRoutes,
+  saveRecipientServices,
   updateNotificationRecipient,
-  type LiveRecipient,
   type NotificationRecipient,
+  type RouteAssignment,
   type ServiceRouting,
 } from "../api/notificationRouting";
 
@@ -27,23 +28,48 @@ function recipientName(recipient: NotificationRecipient): string {
   return recipient.label?.trim() || formatPhone(recipient.phone_number);
 }
 
-function assignedIds(service: ServiceRouting): string[] {
-  return service.assignments.map((item) => item.recipient_id);
+function activeServiceKeys(services: ServiceRouting[], recipientId: string): string[] {
+  return services
+    .filter((service) =>
+      service.assignments.some((item) => item.recipient_id === recipientId && item.is_active)
+    )
+    .map((service) => service.service_key);
 }
 
-function sameIds(left: string[], right: string[]): boolean {
-  if (left.length !== right.length) return false;
-  const rightSet = new Set(right);
-  return left.every((id) => rightSet.has(id));
+function withRecipientServices(
+  services: ServiceRouting[],
+  recipient: NotificationRecipient,
+  serviceKeys: string[]
+): ServiceRouting[] {
+  const selected = new Set(serviceKeys);
+  return services.map((service) => {
+    const without = service.assignments.filter((item) => item.recipient_id !== recipient.id);
+    const effectiveWithout = service.effective_recipients.filter((item) => item.id !== recipient.id);
+    if (!selected.has(service.service_key)) {
+      return { ...service, assignments: without, effective_recipients: effectiveWithout };
+    }
+    const assignment: RouteAssignment = {
+      id: `${recipient.id}:${service.service_key}`,
+      service_key: service.service_key,
+      recipient_id: recipient.id,
+      recipient_label: recipient.label,
+      phone_number: recipient.phone_number,
+      is_active: true,
+      recipient_is_active: recipient.is_active,
+      effective: recipient.is_active,
+    };
+    return {
+      ...service,
+      assignments: [...without, assignment],
+      effective_recipients: recipient.is_active ? [...effectiveWithout, recipient] : effectiveWithout,
+    };
+  });
 }
 
 export const WhatsAppNotificationSettings: React.FC = () => {
   const [routingMode, setRoutingMode] = useState<string | null>(null);
-  const [liveRecipients, setLiveRecipients] = useState<LiveRecipient[]>([]);
   const [recipients, setRecipients] = useState<NotificationRecipient[]>([]);
   const [services, setServices] = useState<ServiceRouting[]>([]);
-  const [drafts, setDrafts] = useState<Record<string, string[]>>({});
-  const [savedIds, setSavedIds] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -59,24 +85,22 @@ export const WhatsAppNotificationSettings: React.FC = () => {
   const [editPhone, setEditPhone] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [busyRecipientId, setBusyRecipientId] = useState<string | null>(null);
+  const [savingServicesId, setSavingServicesId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<NotificationRecipient | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [savingService, setSavingService] = useState<string | null>(null);
-
-  const applyServices = useCallback((next: ServiceRouting[]) => {
-    const baseline: Record<string, string[]> = {};
-    next.forEach((service) => {
-      baseline[service.service_key] = assignedIds(service);
-    });
-    setServices(next);
-    setSavedIds(baseline);
-    setDrafts(baseline);
-  }, []);
 
   const load = useCallback(async (manual = false) => {
     if (manual) setIsRefreshing(true);
     else setIsLoading(true);
     setError(null);
+
+    const adopted = await adoptEnvironmentRouting();
+    if (adopted.error) {
+      setError(adopted.error);
+      setIsLoading(false);
+      setIsRefreshing(false);
+      return;
+    }
 
     const [recipientResult, routeResult, settingsResult] = await Promise.all([
       fetchNotificationRecipients(),
@@ -87,16 +111,15 @@ export const WhatsAppNotificationSettings: React.FC = () => {
     if (recipientResult.error || routeResult.error || settingsResult.error) {
       setError(recipientResult.error || routeResult.error || settingsResult.error);
     } else {
-      setRoutingMode(settingsResult.data?.routing_mode || "env");
-      setLiveRecipients(settingsResult.data?.live_recipients || []);
+      setRoutingMode(settingsResult.data?.routing_mode || adopted.data?.routing_mode || "env");
       setRecipients(recipientResult.data || []);
-      applyServices(routeResult.data || []);
+      setServices(routeResult.data || []);
       setHasLoaded(true);
     }
 
     setIsLoading(false);
     setIsRefreshing(false);
-  }, [applyServices]);
+  }, []);
 
   useEffect(() => {
     load();
@@ -108,11 +131,13 @@ export const WhatsAppNotificationSettings: React.FC = () => {
     return () => window.clearTimeout(timer);
   }, [notice]);
 
-  const recipientById = useMemo(() => {
-    const map = new Map<string, NotificationRecipient>();
-    recipients.forEach((recipient) => map.set(recipient.id, recipient));
+  const serviceKeysByRecipient = useMemo(() => {
+    const map = new Map<string, string[]>();
+    recipients.forEach((recipient) => {
+      map.set(recipient.id, activeServiceKeys(services, recipient.id));
+    });
     return map;
-  }, [recipients]);
+  }, [recipients, services]);
 
   const showNotice = (message: string) => {
     setError(null);
@@ -144,7 +169,7 @@ export const WhatsAppNotificationSettings: React.FC = () => {
     }
     setRecipients((current) => [...current, result.data as NotificationRecipient]);
     resetAddForm();
-    showNotice("Recipient added.");
+    showNotice("Number added. Select the services it should receive.");
   };
 
   const startEdit = (recipient: NotificationRecipient) => {
@@ -169,13 +194,23 @@ export const WhatsAppNotificationSettings: React.FC = () => {
     });
     setIsSavingEdit(false);
     if (result.error || !result.data) {
-      setError(result.error || "Could not update the recipient.");
+      setError(result.error || "Could not update the number.");
       return;
     }
     const updated = result.data;
     setRecipients((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+    setServices((current) =>
+      current.map((service) => ({
+        ...service,
+        assignments: service.assignments.map((item) =>
+          item.recipient_id === updated.id
+            ? { ...item, recipient_label: updated.label, phone_number: updated.phone_number }
+            : item
+        ),
+      }))
+    );
     setEditingId(null);
-    showNotice("Recipient updated.");
+    showNotice("Number updated.");
   };
 
   const handleToggle = async (recipient: NotificationRecipient) => {
@@ -186,12 +221,12 @@ export const WhatsAppNotificationSettings: React.FC = () => {
     });
     setBusyRecipientId(null);
     if (result.error || !result.data) {
-      setError(result.error || "Could not update the recipient.");
+      setError(result.error || "Could not update the number.");
       return;
     }
     const updated = result.data;
     setRecipients((current) => current.map((item) => (item.id === updated.id ? updated : item)));
-    showNotice(updated.is_active ? "Recipient enabled." : "Recipient disabled.");
+    showNotice(updated.is_active ? "Number enabled." : "Number disabled. It will not receive alerts.");
   };
 
   const handleDelete = async () => {
@@ -207,53 +242,36 @@ export const WhatsAppNotificationSettings: React.FC = () => {
     }
     const removedId = pendingDelete.id;
     setRecipients((current) => current.filter((item) => item.id !== removedId));
-    setDrafts((current) => {
-      const next = { ...current };
-      Object.keys(next).forEach((key) => {
-        next[key] = next[key].filter((id) => id !== removedId);
-      });
-      return next;
-    });
-    setSavedIds((current) => {
-      const next = { ...current };
-      Object.keys(next).forEach((key) => {
-        next[key] = next[key].filter((id) => id !== removedId);
-      });
-      return next;
-    });
+    setServices((current) =>
+      current.map((service) => ({
+        ...service,
+        assignments: service.assignments.filter((item) => item.recipient_id !== removedId),
+        effective_recipients: service.effective_recipients.filter((item) => item.id !== removedId),
+      }))
+    );
     setPendingDelete(null);
-    showNotice("Recipient deleted.");
+    showNotice("Number deleted. It no longer receives alerts.");
   };
 
-  const toggleDraft = (serviceKey: string, recipientId: string) => {
-    setDrafts((current) => {
-      const selected = current[serviceKey] || [];
-      const next = selected.includes(recipientId)
-        ? selected.filter((id) => id !== recipientId)
-        : [...selected, recipientId];
-      return { ...current, [serviceKey]: next };
-    });
-  };
-
-  const cancelDraft = (serviceKey: string) => {
-    setDrafts((current) => ({ ...current, [serviceKey]: savedIds[serviceKey] || [] }));
-  };
-
-  const handleSaveService = async (serviceKey: string) => {
-    setSavingService(serviceKey);
+  const handleServiceToggle = async (recipient: NotificationRecipient, serviceKey: string, checked: boolean) => {
+    const currentKeys = serviceKeysByRecipient.get(recipient.id) || [];
+    const nextKeys = checked
+      ? [...currentKeys, serviceKey]
+      : currentKeys.filter((key) => key !== serviceKey);
+    setSavingServicesId(recipient.id);
     setError(null);
-    const result = await saveServiceRoutes(serviceKey, drafts[serviceKey] || []);
-    setSavingService(null);
+    const result = await saveRecipientServices(recipient.id, nextKeys);
+    setSavingServicesId(null);
     if (result.error || !result.data) {
-      setError(result.error || "Could not save the service assignment.");
+      setError(result.error || "Could not update the services for this number.");
       return;
     }
-    const saved = result.data;
-    setServices((current) => current.map((item) => (item.service_key === serviceKey ? saved : item)));
-    const ids = assignedIds(saved);
-    setSavedIds((current) => ({ ...current, [serviceKey]: ids }));
-    setDrafts((current) => ({ ...current, [serviceKey]: ids }));
-    showNotice(`Assignments saved for ${serviceKey}.`);
+    setServices((current) => withRecipientServices(current, recipient, result.data?.service_keys || nextKeys));
+    showNotice(
+      result.data.service_keys.length === 0
+        ? `${recipientName(recipient)} will not receive alerts.`
+        : `Services updated for ${recipientName(recipient)}.`
+    );
   };
 
   return (
@@ -265,7 +283,7 @@ export const WhatsAppNotificationSettings: React.FC = () => {
             <h1 className="text-xl font-bold tracking-tight text-slate-900">WhatsApp Notifications</h1>
           </div>
           <p className="mt-1 text-sm text-slate-500">
-            Choose operations recipients and which services they cover.
+            Edit each number, delete it, and choose which services it receives.
           </p>
         </div>
         <Button
@@ -282,12 +300,12 @@ export const WhatsAppNotificationSettings: React.FC = () => {
       </div>
 
       {hasLoaded && routingMode === "database" ? (
-        <Alert variant="info" title="Live notifications use the service assignments on this page.">
-          An alert goes only to active recipients with an active assignment for that service. A service with nobody assigned sends to nobody.
+        <Alert variant="info" title="Live alerts follow the services checked on each number.">
+          An active number receives an alert only for the services selected on it. A disabled number, or a number with no services selected, receives nothing.
         </Alert>
       ) : hasLoaded ? (
         <Alert variant="info" title="Live notifications currently use environment configuration.">
-          The numbers under Currently receiving are the backend numbers getting operations alerts now.
+          No environment numbers were available to take over, so changes on this page are saved but are not the live delivery list yet.
         </Alert>
       ) : null}
 
@@ -300,270 +318,184 @@ export const WhatsAppNotificationSettings: React.FC = () => {
           <p className="mt-3 text-sm font-medium text-slate-700">Loading WhatsApp notification settings...</p>
         </div>
       ) : hasLoaded ? (
-        <>
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-base font-semibold text-slate-900">Currently receiving</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                {routingMode === "database"
-                  ? "Active recipients with a service assignment. These numbers receive operations alerts now."
-                  : "These are the notification numbers already configured in the backend."}
-              </p>
-            </div>
-            {liveRecipients.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm text-slate-500">
-                No notification numbers are configured.
-              </div>
-            ) : (
-              <ul className="divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                {liveRecipients.map((recipient) => (
-                  <li key={`${recipient.label}-${recipient.phone_number}`} className="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-900">{recipient.label}</p>
-                      <p className="mt-0.5 text-sm text-slate-500">{formatPhone(recipient.phone_number)}</p>
-                    </div>
-                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                      Receiving
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">Notification numbers</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              These are the numbers that receive operations WhatsApp alerts. Check a service to include that number, or clear every service to stop it.
+            </p>
+          </div>
 
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-base font-semibold text-slate-900">Saved recipients</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Extra recipients stored for service routing. They receive alerts when routing mode is database.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
-              <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-                <Input
-                  label="Name"
-                  value={newLabel}
-                  onChange={(event) => setNewLabel(event.target.value)}
-                  placeholder="Operations desk"
-                  maxLength={120}
-                />
-                <Input
-                  label="Phone number"
-                  value={newPhone}
-                  onChange={(event) => setNewPhone(event.target.value)}
-                  placeholder="9876543210"
-                  inputMode="tel"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    onClick={handleAdd}
-                    isLoading={isAdding}
-                    leftIcon={<Plus className="h-4 w-4" />}
-                  >
-                    Add
-                  </Button>
-                  <Button type="button" variant="secondary" onClick={resetAddForm} disabled={isAdding}>
-                    Cancel
-                  </Button>
-                </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+            <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+              <Input
+                label="Name"
+                value={newLabel}
+                onChange={(event) => setNewLabel(event.target.value)}
+                placeholder="Operations desk"
+                maxLength={120}
+              />
+              <Input
+                label="Phone number"
+                value={newPhone}
+                onChange={(event) => setNewPhone(event.target.value)}
+                placeholder="9876543210"
+                inputMode="tel"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  onClick={handleAdd}
+                  isLoading={isAdding}
+                  leftIcon={<Plus className="h-4 w-4" />}
+                >
+                  Add
+                </Button>
+                <Button type="button" variant="secondary" onClick={resetAddForm} disabled={isAdding}>
+                  Cancel
+                </Button>
               </div>
             </div>
+          </div>
 
-            {recipients.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm text-slate-500">
-                No WhatsApp recipients yet.
-              </div>
-            ) : (
-              <ul className="divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                {recipients.map((recipient) => {
-                  const editing = editingId === recipient.id;
-                  return (
-                    <li key={recipient.id} className="px-4 py-4 sm:px-5">
-                      {editing ? (
-                        <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-                          <Input
-                            label="Name"
-                            value={editLabel}
-                            onChange={(event) => setEditLabel(event.target.value)}
-                            maxLength={120}
-                          />
-                          <Input
-                            label="Phone number"
-                            value={editPhone}
-                            onChange={(event) => setEditPhone(event.target.value)}
-                            inputMode="tel"
-                          />
-                          <div className="flex gap-2">
-                            <Button type="button" onClick={handleSaveEdit} isLoading={isSavingEdit}>
-                              Save
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              onClick={() => setEditingId(null)}
-                              disabled={isSavingEdit}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
+          {recipients.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm text-slate-500">
+              No WhatsApp numbers yet.
+            </div>
+          ) : (
+            <ul className="space-y-4">
+              {recipients.map((recipient) => {
+                const editing = editingId === recipient.id;
+                const selected = serviceKeysByRecipient.get(recipient.id) || [];
+                const savingServices = savingServicesId === recipient.id;
+                return (
+                  <li key={recipient.id} className="rounded-2xl border border-slate-200 bg-white px-4 py-4 sm:px-5">
+                    {editing ? (
+                      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                        <Input
+                          label="Name"
+                          value={editLabel}
+                          onChange={(event) => setEditLabel(event.target.value)}
+                          maxLength={120}
+                        />
+                        <Input
+                          label="Phone number"
+                          value={editPhone}
+                          onChange={(event) => setEditPhone(event.target.value)}
+                          inputMode="tel"
+                        />
+                        <div className="flex gap-2">
+                          <Button type="button" onClick={handleSaveEdit} isLoading={isSavingEdit}>
+                            Save
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setEditingId(null)}
+                            disabled={isSavingEdit}
+                          >
+                            Cancel
+                          </Button>
                         </div>
-                      ) : (
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="text-sm font-semibold text-slate-900">{recipientName(recipient)}</p>
-                              <span
-                                className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                                  recipient.is_active
-                                    ? "bg-emerald-50 text-emerald-700"
-                                    : "bg-slate-100 text-slate-500"
-                                }`}
-                              >
-                                {recipient.is_active ? "Active" : "Disabled"}
-                              </span>
-                            </div>
-                            <p className="mt-0.5 text-sm text-slate-500">{formatPhone(recipient.phone_number)}</p>
-                          </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              role="switch"
-                              aria-checked={recipient.is_active}
-                              aria-label={recipient.is_active ? "Disable recipient" : "Enable recipient"}
-                              disabled={busyRecipientId === recipient.id}
-                              onClick={() => handleToggle(recipient)}
-                              className={`relative h-6 w-11 rounded-full transition-colors disabled:opacity-50 ${
-                                recipient.is_active ? "bg-lime-600" : "bg-slate-300"
+                            <p className="text-sm font-semibold text-slate-900">{recipientName(recipient)}</p>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                                recipient.is_active
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : "bg-slate-100 text-slate-500"
                               }`}
                             >
-                              <span
-                                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                                  recipient.is_active ? "translate-x-5" : "translate-x-0.5"
-                                }`}
-                              />
-                            </button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => startEdit(recipient)}
-                              leftIcon={<Pencil className="h-3.5 w-3.5" />}
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setPendingDelete(recipient)}
-                              leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-                            >
-                              Delete
-                            </Button>
+                              {recipient.is_active ? "Active" : "Disabled"}
+                            </span>
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                              {selected.length === 0
+                                ? "Receives nothing"
+                                : `${selected.length} service${selected.length === 1 ? "" : "s"}`}
+                            </span>
                           </div>
+                          <p className="mt-0.5 text-sm text-slate-500">{formatPhone(recipient.phone_number)}</p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={recipient.is_active}
+                            aria-label={recipient.is_active ? "Disable recipient" : "Enable recipient"}
+                            disabled={busyRecipientId === recipient.id}
+                            onClick={() => handleToggle(recipient)}
+                            className={`relative h-6 w-11 rounded-full transition-colors disabled:opacity-50 ${
+                              recipient.is_active ? "bg-lime-600" : "bg-slate-300"
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                                recipient.is_active ? "translate-x-5" : "translate-x-0.5"
+                              }`}
+                            />
+                          </button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => startEdit(recipient)}
+                            leftIcon={<Pencil className="h-3.5 w-3.5" />}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setPendingDelete(recipient)}
+                            leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    <fieldset className="mt-4 border-t border-slate-100 pt-4" disabled={savingServices || editing}>
+                      <legend className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Services this number receives
+                      </legend>
+                      {services.length === 0 ? (
+                        <p className="mt-2 text-sm text-slate-500">No services returned.</p>
+                      ) : (
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                          {services.map((service) => {
+                            const checked = selected.includes(service.service_key);
+                            return (
+                              <label
+                                key={service.service_key}
+                                className="inline-flex items-center gap-2 text-sm text-slate-700"
+                              >
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4 rounded border-slate-300 text-lime-700 focus:ring-lime-600"
+                                  checked={checked}
+                                  onChange={(event) =>
+                                    handleServiceToggle(recipient, service.service_key, event.target.checked)
+                                  }
+                                />
+                                <span>{service.service_key}</span>
+                              </label>
+                            );
+                          })}
                         </div>
                       )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-base font-semibold text-slate-900">Service routing</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                A recipient can be selected for more than one service.{" "}
-                {routingMode === "database"
-                  ? "Saving changes who receives that service."
-                  : "Saving stores the assignment. Live delivery still uses the environment numbers."}
-              </p>
-            </div>
-
-            {recipients.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm text-slate-500">
-                Add a recipient before assigning services.
-              </div>
-            ) : services.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm text-slate-500">
-                No services returned.
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                {services.map((service) => {
-                  const selected = drafts[service.service_key] || [];
-                  const dirty = !sameIds(selected, savedIds[service.service_key] || []);
-                  const selectedLabels = selected.map((id) => {
-                    const recipient = recipientById.get(id);
-                    return recipient ? recipientName(recipient) : "Recipient";
-                  });
-                  return (
-                    <div key={service.service_key} className="space-y-3 px-4 py-4 sm:px-5">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <h3 className="text-sm font-semibold text-slate-900">{service.service_key}</h3>
-                          {selectedLabels.length === 0 ? (
-                            <p className="mt-1 text-sm text-slate-500">No recipient assigned.</p>
-                          ) : (
-                            <p className="mt-1 text-sm text-slate-600">{selectedLabels.join(", ")}</p>
-                          )}
-                        </div>
-                        {dirty && (
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              onClick={() => handleSaveService(service.service_key)}
-                              isLoading={savingService === service.service_key}
-                            >
-                              Save
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => cancelDraft(service.service_key)}
-                              disabled={savingService === service.service_key}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-2">
-                        {recipients.map((recipient) => {
-                          const checked = selected.includes(recipient.id);
-                          return (
-                            <label
-                              key={recipient.id}
-                              className="inline-flex items-center gap-2 text-sm text-slate-700"
-                            >
-                              <input
-                                type="checkbox"
-                                className="h-4 w-4 rounded border-slate-300 text-lime-700 focus:ring-lime-600"
-                                checked={checked}
-                                onChange={() => toggleDraft(service.service_key, recipient.id)}
-                              />
-                              <span>
-                                {recipientName(recipient)}
-                                {!recipient.is_active && (
-                                  <span className="ml-1 text-xs text-slate-400">Disabled</span>
-                                )}
-                              </span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        </>
+                    </fieldset>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       ) : null}
 
       {pendingDelete && (
@@ -578,9 +510,7 @@ export const WhatsAppNotificationSettings: React.FC = () => {
               Delete {recipientName(pendingDelete)}?
             </h2>
             <p className="mt-2 text-sm text-slate-500">
-              {pendingDelete.is_active
-                ? "Disable this recipient before deleting them."
-                : "This removes the recipient. Assigned services must be cleared first."}
+              This removes the number and every service assigned to it. Alerts stop for this number immediately.
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <Button type="button" variant="secondary" onClick={() => setPendingDelete(null)} disabled={isDeleting}>
